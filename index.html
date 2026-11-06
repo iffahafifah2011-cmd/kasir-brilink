@@ -3,168 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Kasir BRILink</title>
+    <title>Agen BRILink Smart Kasir</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- SheetJS (xlsx) CDN untuk Ekspor Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Firebase SDK (Version 9+ Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        @media print {
+            body { background: white !important; color: black !important; }
+            #pinScreen, header, #formSection, #filterArea, #btnTheme, .no-print { display: none !important; }
+            #mainApp { display: block !important; }
+            .print-only { display: block !important; }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td { border: 1px solid #cbd5e1 !important; padding: 6px !important; text-align: left !important; }
+        }
+        .print-only { display: none; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen pb-10">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans pb-12 transition-colors duration-200">
 
     <!-- Screen PIN Authentication -->
-    <div id="pinScreen" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl text-center">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Kasir Agen BRILink</h2>
-            <p class="text-sm text-gray-500 mb-6">Masukkan PIN Toko / Cabang untuk masuk</p>
-            <input type="password" id="inputPin" placeholder="Masukkan PIN (misal: 1234)" class="w-full text-center text-2xl tracking-widest border-2 border-gray-300 rounded-xl p-3 mb-4 focus:outline-none focus:border-blue-600">
-            <button onclick="loginWithPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition">Masuk ke Toko</button>
-        </div>
-    </div>
+    <div id="pinScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-100 dark:border-slate-700 text-center">
+            <div class="w-16 h-16 bg-blue-700 text-white rounded-2xl flex items-center justify-center font-bold text-3xl mx-auto mb-3 shadow-lg shadow-blue-500/30">
+                B
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">BRILink Smart Kasir</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-6">Masukkan PIN Akses Toko Anda</p>
 
-    <!-- Modal Pop-up Atur Saldo Awal -->
-    <div id="modalSaldo" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">⚙️ Atur Modal Awal Toko</h3>
-            <div class="space-y-4 mb-6">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Cash Tunai Awal (Rp)</label>
-                    <input type="number" id="setInitialCash" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Saldo Digital Awal (Rp)</label>
-                    <input type="number" id="setInitialSaldo" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
-                </div>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="closeModalSaldo()" class="w-1/2 bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm">Batal</button>
-                <button onclick="saveInitialBalances()" class="w-1/2 bg-blue-600 text-white font-bold py-2.5 rounded-xl text-sm">Simpan Modal</button>
-            </div>
+            <input type="password" id="inputPin" placeholder="PIN (Default: 1234)" class="w-full text-center tracking-widest text-2xl font-bold p-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none mb-4">
+            
+            <button onclick="loginWithPin()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-blue-700/25 transition duration-200">
+                Masuk Aplikasi
+            </button>
         </div>
     </div>
 
     <!-- Main Dashboard -->
-    <div id="mainApp" class="hidden max-w-4xl mx-auto px-4 pt-6">
-        <!-- Header -->
-        <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm mb-6">
-            <div>
-                <h1 class="text-xl font-bold text-gray-800">Pembukuan Agen BRILink</h1>
-                <p class="text-xs text-gray-500">Status Device: <span id="syncStatus" class="text-green-600 font-bold">Terhubung Real-time</span></p>
+    <div id="mainApp" class="hidden">
+        <!-- Top Header -->
+        <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white sticky top-0 z-40 shadow-md no-print">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white text-blue-900 w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl shadow">
+                        B
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">Agen BRILink Smart</h1>
+                        <p class="text-xs text-blue-200">Kasir & Multi-Device Pembukuan Real-Time (<span id="displayPin">PIN: 1234</span>)</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleDarkMode()" id="btnTheme" class="px-3 py-1.5 bg-blue-800 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg border border-blue-600 transition flex items-center space-x-1">
+                        <span id="themeIcon">🌙</span> <span id="themeText" class="hidden sm:inline">Dark</span>
+                    </button>
+                    <button onclick="tutupBukuBulanan()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg shadow transition flex items-center space-x-1">
+                        <span>📅</span> <span class="hidden sm:inline">Tutup Buku</span>
+                    </button>
+                    <button onclick="openSettings()" class="px-3 py-1.5 bg-blue-800 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg border border-blue-600 transition flex items-center space-x-1">
+                        <span>⚙️</span> <span class="hidden sm:inline">Pengaturan</span>
+                    </button>
+                    <button onclick="logout()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow transition">
+                        Keluar
+                    </button>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="openModalSaldo()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-full border">⚙️ Atur Saldo Awal</button>
-                <span id="displayPin" class="text-xs bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded-full">PIN: -</span>
-                <button onclick="logout()" class="text-xs bg-red-100 text-red-600 hover:bg-red-200 font-bold px-3 py-1.5 rounded-full">Keluar</button>
-            </div>
+        </header>
+
+        <!-- Print Header -->
+        <div class="print-only mb-6 border-b pb-4">
+            <h1 class="text-2xl font-bold">LAPORAN PEMBUKUAN AGEN BRILINK</h1>
+            <p class="text-sm text-gray-600">Dicetak Pada: <span id="printDate"></span> | Cabang PIN: <span id="printPin"></span></p>
         </div>
 
-        <!-- Metric Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-emerald-500">
-                <p class="text-xs text-gray-500 font-medium">Cash Toko</p>
-                <p id="cardCash" class="text-lg font-bold text-gray-800 mt-1">Rp 0</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
-                <p class="text-xs text-gray-500 font-medium">Saldo Digital</p>
-                <p id="cardSaldo" class="text-lg font-bold text-gray-800 mt-1">Rp 0</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500">
-                <p class="text-xs text-gray-500 font-medium">Total Piutang (Hutang)</p>
-                <p id="cardHutang" class="text-lg font-bold text-gray-800 mt-1">Rp 0</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-500">
-                <p class="text-xs text-gray-500 font-medium">Profit Kumulatif</p>
-                <p id="cardProfit" class="text-lg font-bold text-emerald-600 mt-1">Rp 0</p>
-            </div>
-        </div>
-
-        <!-- Input Form -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm mb-6">
-            <h2 class="text-base font-bold text-gray-800 mb-4">Input Transaksi Baru</h2>
+        <!-- Main Container -->
+        <main class="max-w-7xl mx-auto px-4 mt-6">
             
-            <!-- Payment Mode -->
-            <div class="grid grid-cols-3 gap-2 mb-4">
-                <button type="button" onclick="setMode('Tunai')" id="btnTunai" class="py-2.5 rounded-xl border-2 font-bold text-sm border-blue-600 bg-blue-50 text-blue-600">💵 Tunai</button>
-                <button type="button" onclick="setMode('Non-Tunai')" id="btnNonTunai" class="py-2.5 rounded-xl border-2 font-bold text-sm border-gray-200 text-gray-600">💳 Non-Tunai</button>
-                <button type="button" onclick="setMode('HUTANG')" id="btnHutang" class="py-2.5 rounded-xl border-2 font-bold text-sm border-gray-200 text-gray-600">⏳ HUTANG</button>
-            </div>
-
-            <!-- Inputs -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- Dynamic Total Assets Top Banner -->
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-4 mb-6 text-white shadow-lg flex justify-between items-center">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Jenis Transaksi</label>
-                    <select id="selectTx" onchange="calculateFee()" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
-                        <option value="Sesama BRI">Transfer / Tarik Sesama BRI</option>
-                        <option value="Bank Lain">Transfer / Tarik Bank Lain</option>
-                        <option value="DANA & e-Wallet">Topup DANA & e-Wallet</option>
-                        <option value="PLN & Pulsa">PLN / Pulsa / BPJS / Pajak</option>
-                        <option value="Paket PKH">Pencairan Paket PKH</option>
-                        <option value="Pelunasan Hutang">Pelunasan Hutang</option>
-                        <option value="Isi Cash Kasir (Tarik ATM)">Isi Cash Kasir (Tarik ATM)</option>
-                        <option value="Setor Saldo (Setor CRM)">Setor Saldo (Setor CRM)</option>
-                        <option value="Tarik Profit">Tarik Profit (Ambil Untung)</option>
-                    </select>
+                    <p class="text-xs font-medium text-emerald-100 uppercase tracking-wider">Total Aset / Modal Gabungan Toko</p>
+                    <h2 id="cardTotalAsset" class="text-2xl sm:text-3xl font-black mt-0.5">Rp 0</h2>
+                    <p class="text-[11px] text-emerald-200 mt-0.5">*Penjumlahan Cash Fisik + Saldo Digital + Piutang</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nominal (Rp)</label>
-                    <input type="number" id="inputNominal" oninput="calculateFee()" placeholder="0" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+                <div class="text-3xl sm:text-4xl opacity-80">💎</div>
+            </div>
+
+            <!-- Dashboard Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Uang Cash (Fisik Kasir)</span>
+                        <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">💵</div>
+                    </div>
+                    <div id="cardCash" class="text-2xl font-bold text-slate-900 dark:text-white">Rp 0</div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Uang tunai di laci toko</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Saldo Digital (Rekening)</span>
+                        <div class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-lg">🏦</div>
+                    </div>
+                    <div id="cardSaldo" class="text-2xl font-bold text-blue-900 dark:text-blue-400">Rp 0</div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Modal aplikasi & EDC BRI</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Piutang (Hutang)</span>
+                        <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 flex items-center justify-center text-lg">📝</div>
+                    </div>
+                    <div id="cardHutang" class="text-2xl font-bold text-amber-600 dark:text-amber-400">Rp 0</div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Tagihan pelanggan belum lunas</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profit Bersih Bulan Ini</span>
+                        <div class="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg">📈</div>
+                    </div>
+                    <div id="cardMonthlyProfit" class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Rp 0</div>
+                    <p id="cardTotalProfit" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Total kumulatif: Rp 0</p>
                 </div>
             </div>
 
-            <!-- Calculation Output -->
-            <div class="bg-gray-50 p-4 rounded-xl mb-4 text-xs space-y-1">
-                <div class="flex justify-between text-gray-600">
-                    <span>Biaya Admin Dikenakan:</span>
-                    <span id="calcAdmin" class="font-bold text-gray-800">Rp 0</span>
+            <!-- Form & Table Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Form -->
+                <div id="formSection" class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm h-fit">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4 mb-5">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-blue-700 dark:text-blue-400 text-xl">➕</span>
+                            <h2 id="formTitle" class="font-bold text-slate-800 dark:text-white text-base">Input Transaksi Kasir</h2>
+                        </div>
+                        <button id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs bg-red-100 text-red-600 font-bold px-2.5 py-1 rounded-lg">Batal Edit</button>
+                    </div>
+
+                    <!-- Mode Pembayaran -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Mode Pembayaran</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" onclick="setMode('Tunai')" id="btnTunai" class="py-2.5 text-xs font-bold rounded-xl border bg-emerald-50 dark:bg-emerald-900/40 border-emerald-600 text-emerald-700 dark:text-emerald-400 shadow-sm">💵 Tunai</button>
+                            <button type="button" onclick="setMode('Non-Tunai')" id="btnNonTunai" class="py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">💳 Non-Tunai</button>
+                            <button type="button" onclick="setMode('HUTANG')" id="btnHutang" class="py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">⏳ HUTANG</button>
+                        </div>
+                    </div>
+
+                    <!-- Jenis Transaksi -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jenis Transaksi</label>
+                        <select id="selectJenis" onchange="calculateFee()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none p-3 font-medium">
+                            <optgroup label="BRI (EDC)">
+                                <option value="Tarik Tunai BRI">Tarik Tunai BRI</option>
+                                <option value="Transfer BRI">Transfer BRI</option>
+                                <option value="Tagihan BRI">Tagihan BRI</option>
+                            </optgroup>
+                            <optgroup label="Bank Lain (EDC)">
+                                <option value="Tarik Tunai Bank Lain">Tarik Tunai Bank Lain</option>
+                                <option value="Transfer Bank Lain">Transfer Bank Lain</option>
+                            </optgroup>
+                            <optgroup label="Bansos & e-Wallet">
+                                <option value="PKH">PKH</option>
+                                <option value="DANA & e-Wallet">DANA & e-Wallet</option>
+                                <option value="PLN Token">PLN Token</option>
+                                <option value="PLN Tagihan">PLN Tagihan</option>
+                                <option value="Pulsa">Pulsa</option>
+                                <option value="Paket Data">Paket Data</option>
+                                <option value="Pajak Kendaraan">Pajak Kendaraan</option>
+                                <option value="Pajak Kendaraan + Print">Pajak Kendaraan + Print</option>
+                            </optgroup>
+                            <optgroup label="Internal & Hutang">
+                                <option value="Pelunasan Hutang">Pelunasan Hutang</option>
+                                <option value="Isi Cash Kasir (Tarik ATM)">Isi Cash Kasir (Tarik ATM)</option>
+                                <option value="Setor Saldo (Setor CRM)">Setor Saldo (Setor CRM)</option>
+                                <option value="Tarik Profit">Tarik Profit</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Nominal -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nominal (Rp)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm">Rp</span>
+                            <input type="text" id="inputNominalFormatted" oninput="handleNominalInput(this)" placeholder="0" class="w-full pl-10 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none p-3 font-bold">
+                        </div>
+                    </div>
+
+                    <!-- Editable Admin Input & Calculation Engine -->
+                    <div class="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl border border-slate-200 dark:border-slate-600 space-y-3 text-xs mb-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-600 dark:text-slate-300 font-semibold">Biaya Admin (Dapat Diubah):</span>
+                            <div class="flex items-center space-x-1 w-32">
+                                <span class="text-slate-400 font-bold">Rp</span>
+                                <input type="number" id="inputAdminManual" oninput="calculateFee(true)" placeholder="0" class="w-full bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded-lg p-1.5 text-right font-bold text-slate-900 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                            <span>Estimasi Profit Bersih Toko:</span>
+                            <span id="calcProfit" class="font-bold text-emerald-600 dark:text-emerald-400">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-600 font-bold text-slate-900 dark:text-white">
+                            <span>Total Serah / Diterima Tunai:</span>
+                            <span id="calcTotalHand" class="font-bold text-blue-700 dark:text-blue-400 text-sm">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <!-- Tanggal & Keterangan -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal</label>
+                            <input type="date" id="inputTanggal" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Keterangan / Nama</label>
+                            <input type="text" id="inputKet" placeholder="e.g. Pak Budi" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <button id="btnSubmitTx" onclick="saveTransaction()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-700/20 transition duration-200 flex items-center justify-center space-x-2 text-sm">
+                        <span>💾</span> <span>Simpan Transaksi</span>
+                    </button>
                 </div>
-                <div class="flex justify-between text-gray-600">
-                    <span>Estimasi Profit Bersih:</span>
-                    <span id="calcProfit" class="font-bold text-emerald-600">Rp 0</span>
+
+                <!-- Right: Table & Filters -->
+                <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-4 mb-4">
+                        <div>
+                            <h2 class="font-bold text-slate-800 dark:text-white text-base">Riwayat Transaksi</h2>
+                            <p id="txCount" class="text-xs text-slate-400 dark:text-slate-500">Total 0 baris pencatatan</p>
+                        </div>
+                        <div class="flex items-center space-x-2 no-print">
+                            <button onclick="exportPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition shadow flex items-center space-x-1">
+                                <span>📄</span> <span>Cetak PDF</span>
+                            </button>
+                            <button onclick="exportExcel()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow flex items-center space-x-1">
+                                <span>📊</span> <span>Ekspor Excel</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Option History Sorting & Filters -->
+                    <div id="filterArea" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Urut / Filter Mode</label>
+                            <select id="filterMode" onchange="updateUI()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 font-medium">
+                                <option value="Semua">Semua Mode Pembayaran</option>
+                                <option value="Tunai">Mode Tunai</option>
+                                <option value="Non-Tunai">Mode Non-Tunai</option>
+                                <option value="HUTANG">Mode HUTANG</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Filter Jenis Transaksi</label>
+                            <select id="filterJenis" onchange="updateUI()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 font-medium">
+                                <option value="Semua">Semua Jenis Transaksi</option>
+                                <option value="Tarik Tunai BRI">Tarik Tunai BRI</option>
+                                <option value="Transfer BRI">Transfer BRI</option>
+                                <option value="Tarik Tunai Bank Lain">Tarik Tunai Bank Lain</option>
+                                <option value="Transfer Bank Lain">Transfer Bank Lain</option>
+                                <option value="PKH">PKH</option>
+                                <option value="DANA & e-Wallet">DANA & e-Wallet</option>
+                                <option value="PLN Token">PLN Token</option>
+                                <option value="PLN Tagihan">PLN Tagihan</option>
+                                <option value="Pulsa">Pulsa</option>
+                                <option value="Paket Data">Paket Data</option>
+                                <option value="Pelunasan Hutang">Pelunasan Hutang</option>
+                                <option value="Isi Cash Kasir (Tarik ATM)">Isi Cash Kasir (Tarik ATM)</option>
+                                <option value="Setor Saldo (Setor CRM)">Setor Saldo (Setor CRM)</option>
+                                <option value="Tarik Profit">Tarik Profit</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 max-h-[520px] overflow-y-auto">
+                        <table id="historyTable" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 uppercase sticky top-0 font-bold">
+                                <tr>
+                                    <th class="p-3">Tanggal</th>
+                                    <th class="p-3">Mode</th>
+                                    <th class="p-3">Transaksi</th>
+                                    <th class="p-3 text-right">Nominal</th>
+                                    <th class="p-3 text-right">Admin</th>
+                                    <th class="p-3 text-right">Untung</th>
+                                    <th class="p-3">Ket</th>
+                                    <th class="p-3 text-center no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="txTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+        </main>
+    </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal</label>
-                    <input type="date" id="inputTanggal" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+    <!-- Modal Pengaturan -->
+    <div id="modalSettings" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-2xl w-full space-y-5 shadow-2xl border dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
+                <h3 class="text-base font-bold text-slate-800 dark:text-white">Pengaturan Modal & Struktur Tarif Admin</h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+            </div>
+            
+            <div class="space-y-3">
+                <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">Setel Ulang Saldo Manual Toko Ini</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Cash Fisik (Rp)</label>
+                        <input type="number" id="setCash" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Saldo Digital (Rp)</label>
+                        <input type="number" id="setSaldo" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 font-bold">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Keterangan / Nama Penghutang</label>
-                    <input type="text" id="inputKet" placeholder="e.g. Cicilan Mas Budi" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
-                </div>
+                <button onclick="saveManualBalances()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Modal Baru</button>
             </div>
 
-            <button onclick="saveTransaction()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition">💾 Simpan Transaksi</button>
-        </div>
+            <div class="pt-4 border-t dark:border-slate-700 space-y-4">
+                <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">⚙️ Pengaturan Tarif Admin Default Per Tier Nominal</h4>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Sesuaikan tarif admin otomatis sesuai rentang nominal transaksi:</p>
 
-        <!-- History & Tools -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-base font-bold text-gray-800">Riwayat Transaksi</h2>
-                <button onclick="tutupBukuBulanan()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-2 rounded-lg">📅 Tutup Buku Bulanan</button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-600 border-b">
-                            <th class="p-3">Mode</th>
-                            <th class="p-3">Transaksi</th>
-                            <th class="p-3">Nominal</th>
-                            <th class="p-3">Admin</th>
-                            <th class="p-3">Profit</th>
-                            <th class="p-3">Tanggal / Ket</th>
-                            <th class="p-3 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="txTableBody">
-                        <!-- Transaksi akan muncul di sini -->
-                    </tbody>
-                </table>
+                <!-- Section 1: BRI -->
+                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
+                    <h5 class="font-bold text-xs text-blue-700 dark:text-blue-400">1. Transaksi BRI (EDC / App)</h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                        <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="bri_100k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="bri_500k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="bri_1m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="bri_2m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="bri_3m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="bri_5m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="bri_10m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="bri_15m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="bri_20m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="bri_25m" class="w-full border p-1 rounded"></div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Bank Lain -->
+                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
+                    <h5 class="font-bold text-xs text-amber-700 dark:text-amber-400">2. Transaksi Bank Lain (EDC / App)</h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                        <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="other_100k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="other_500k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="other_1m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="other_2m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="other_3m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="other_5m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="other_10m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="other_15m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="other_20m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="other_25m" class="w-full border p-1 rounded"></div>
+                    </div>
+                </div>
+
+                <!-- Section 3: e-Wallet -->
+                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
+                    <h5 class="font-bold text-xs text-emerald-700 dark:text-emerald-400">3. DANA & e-Wallet</h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                        <div><span class="text-[10px]"><= 10rb:</span><input type="number" id="ewallet_10k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">10rb - 50rb:</span><input type="number" id="ewallet_50k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">50rb - 100rb:</span><input type="number" id="ewallet_100k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="ewallet_500k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="ewallet_1m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="ewallet_2m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="ewallet_3m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="ewallet_5m" class="w-full border p-1 rounded"></div>
+                    </div>
+                </div>
+
+                <button onclick="saveAdminRates()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs">💾 Simpan Seluruh Struktur Tarif Baru</button>
             </div>
         </div>
     </div>
 
     <script>
+        // --- DARK MODE LOGIC ---
+        function initTheme() {
+            const isDark = localStorage.getItem('theme') === 'dark';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').innerText = '☀️';
+                document.getElementById('themeText').innerText = 'Light';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').innerText = '🌙';
+                document.getElementById('themeText').innerText = 'Dark';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+            document.getElementById('themeText').innerText = isDark ? 'Light' : 'Dark';
+        }
+
+        initTheme();
+
         // --- FIREBASE INITIALIZATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyCmhFRxUAAFHx00aoFryY-mjgGTRI_nFYpt",
@@ -180,216 +430,478 @@
 
         let currentPin = "";
         let currentMode = "Tunai";
-        let transactions = [];
+        let rawNominalValue = 0;
+        let editingTxId = null;
+
         let initialCash = 20000000;
         let initialSaldo = 20000000;
+        let transactions = [];
+        
+        let customRates = {
+            bri: { 100:4000, 500:5000, 1000:6000, 2000:8000, 3000:10000, 5000:15000, 10000:25000, 15000:35000, 20000:40000, 25000:50000 },
+            other: { 100:6500, 500:8000, 1000:10000, 2000:12000, 3000:15000, 5000:20000, 10000:30000, 15000:40000, 20000:50000, 25000:60000 },
+            ewallet: { 10:1000, 50:2000, 100:3000, 500:4000, 1000:5000, 2000:7000, 3000:10000, 5000:15000 }
+        };
 
         document.getElementById('inputTanggal').valueAsDate = new Date();
 
-        function setMode(mode) {
-            currentMode = mode;
-            ['Tunai', 'Non-Tunai', 'HUTANG'].forEach(m => {
-                const btn = document.getElementById('btn' + m.replace('-', ''));
-                if (m === mode) {
-                    btn.className = "py-2.5 rounded-xl border-2 font-bold text-sm border-blue-600 bg-blue-50 text-blue-600";
-                } else {
-                    btn.className = "py-2.5 rounded-xl border-2 font-bold text-sm border-gray-200 text-gray-600";
-                }
-            });
+        function handleNominalInput(input) {
+            let valueStr = input.value.replace(/\D/g, '');
+            rawNominalValue = parseFloat(valueStr) || 0;
+            input.value = rawNominalValue ? rawNominalValue.toLocaleString('id-ID') : '';
+            calculateFee(false);
         }
 
-        function calculateFee() {
-            const tx = document.getElementById('selectTx').value;
-            const nominal = parseFloat(document.getElementById('inputNominal').value) || 0;
-            let admin = 0;
-            let profit = 0;
+        function setMode(mode) {
+            currentMode = mode;
+            const btnTunai = document.getElementById('btnTunai');
+            const btnNonTunai = document.getElementById('btnNonTunai');
+            const btnHutang = document.getElementById('btnHutang');
 
-            if (tx === "Sesama BRI") {
-                if (nominal <= 1000000) admin = 3000;
-                else if (nominal <= 3000000) admin = 5000;
-                else admin = 10000;
-                profit = admin;
-            } else if (tx === "Bank Lain") {
-                admin = 10000;
-                profit = 10000 - 6500;
-            } else if (tx === "DANA & e-Wallet" || tx === "PLN & Pulsa") {
-                admin = 3000;
-                profit = 3000;
-            } else if (tx === "Paket PKH") {
-                const tier = Math.ceil(nominal / 600000) || 1;
-                admin = tier * 5000;
-                profit = admin;
+            btnTunai.className = "py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700";
+            btnNonTunai.className = "py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700";
+            btnHutang.className = "py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700";
+
+            if (mode === 'Tunai') {
+                btnTunai.className = "py-2.5 text-xs font-bold rounded-xl border bg-emerald-50 dark:bg-emerald-900/40 border-emerald-600 text-emerald-700 dark:text-emerald-400 shadow-sm";
+            } else if (mode === 'Non-Tunai') {
+                btnNonTunai.className = "py-2.5 text-xs font-bold rounded-xl border bg-blue-50 dark:bg-blue-900/40 border-blue-600 text-blue-700 dark:text-blue-400 shadow-sm";
+            } else if (mode === 'HUTANG') {
+                btnHutang.className = "py-2.5 text-xs font-bold rounded-xl border bg-amber-50 dark:bg-amber-900/40 border-amber-600 text-amber-700 dark:text-amber-400 shadow-sm font-black";
             }
 
-            document.getElementById('calcAdmin').innerText = "Rp " + admin.toLocaleString('id-ID');
+            calculateFee(false);
+        }
+
+        // CALCULATION ENGINE
+        function calculateFee(isManualAdmin = false) {
+            const jenis = document.getElementById('selectJenis').value;
+            const nom = rawNominalValue;
+            let admin = 0;
+            let systemCost = 0;
+
+            if (nom > 0) {
+                if (["Tarik Tunai BRI", "Transfer BRI", "Tagihan BRI"].includes(jenis)) {
+                    systemCost = 4000;
+                    const r = customRates.bri;
+                    if (nom <= 100000) admin = r[100];
+                    else if (nom <= 500000) admin = r[500];
+                    else if (nom <= 1000000) admin = r[1000];
+                    else if (nom <= 2000000) admin = r[2000];
+                    else if (nom <= 3000000) admin = r[3000];
+                    else if (nom <= 5000000) admin = r[5000];
+                    else if (nom <= 10000000) admin = r[10000];
+                    else if (nom <= 15000000) admin = r[15000];
+                    else if (nom <= 20000000) admin = r[20000];
+                    else admin = r[25000];
+                } else if (["Tarik Tunai Bank Lain", "Transfer Bank Lain"].includes(jenis)) {
+                    systemCost = 6500;
+                    const r = customRates.other;
+                    if (nom <= 100000) admin = r[100];
+                    else if (nom <= 500000) admin = r[500];
+                    else if (nom <= 1000000) admin = r[1000];
+                    else if (nom <= 2000000) admin = r[2000];
+                    else if (nom <= 3000000) admin = r[3000];
+                    else if (nom <= 5000000) admin = r[5000];
+                    else if (nom <= 10000000) admin = r[10000];
+                    else if (nom <= 15000000) admin = r[15000];
+                    else if (nom <= 20000000) admin = r[20000];
+                    else admin = r[25000];
+                } else if (jenis === "PKH") {
+                    systemCost = 10500;
+                    if (nom <= 600000) admin = 15000;
+                    else if (nom <= 1200000) admin = 20000;
+                    else if (nom <= 1800000) admin = 25000;
+                    else if (nom <= 2400000) admin = 30000;
+                    else admin = 35000;
+                } else if (jenis === "DANA & e-Wallet") {
+                    systemCost = 0;
+                    const r = customRates.ewallet;
+                    if (nom <= 10000) admin = r[10];
+                    else if (nom <= 50000) admin = r[50];
+                    else if (nom <= 100000) admin = r[100];
+                    else if (nom <= 500000) admin = r[500];
+                    else if (nom <= 1000000) admin = r[1000];
+                    else if (nom <= 2000000) admin = r[2000];
+                    else if (nom <= 3000000) admin = r[3000];
+                    else admin = r[5000];
+                } else if (["Pulsa", "Paket Data", "PLN Token", "PLN Tagihan"].includes(jenis)) {
+                    systemCost = 0;
+                    admin = 3000;
+                } else if (jenis === "Pajak Kendaraan") {
+                    systemCost = 0; admin = 5000;
+                } else if (jenis === "Pajak Kendaraan + Print") {
+                    systemCost = 0; admin = 7000;
+                }
+            }
+
+            const adminInputElem = document.getElementById('inputAdminManual');
+            if (!isManualAdmin) {
+                adminInputElem.value = admin;
+            } else {
+                admin = parseFloat(adminInputElem.value) || 0;
+            }
+
+            const profit = Math.max(0, admin - systemCost);
+            
+            // Total tunai serah/terima
+            let totalHand = 0;
+            if (currentMode === 'Tunai') {
+                if (jenis.startsWith('Tarik') || jenis === 'PKH') {
+                    totalHand = nom; // Fisik keluar
+                } else {
+                    totalHand = nom + admin; // Fisik masuk dari pelanggan
+                }
+            } else {
+                totalHand = nom; // Nilai transaksi non-tunai
+            }
+
             document.getElementById('calcProfit').innerText = "Rp " + profit.toLocaleString('id-ID');
-            return { admin, profit };
+            document.getElementById('calcTotalHand').innerText = "Rp " + totalHand.toLocaleString('id-ID');
+            return { admin, profit, systemCost };
         }
 
         function loginWithPin() {
             const pin = document.getElementById('inputPin').value.trim();
             if (!pin) return alert("Masukkan PIN!");
-            
+
             currentPin = pin;
             document.getElementById('displayPin').innerText = "PIN: " + pin;
+            document.getElementById('printPin').innerText = pin;
             document.getElementById('pinScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
 
             db.ref('stores/' + currentPin).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    transactions = data.transactions ? Object.values(data.transactions) : [];
-                    initialCash = data.initialCash !== undefined ? data.initialCash : 20000000;
-                    initialSaldo = data.initialSaldo !== undefined ? data.initialSaldo : 20000000;
+                const d = snapshot.val();
+                if (d) {
+                    transactions = d.transactions ? Object.values(d.transactions) : [];
+                    initialCash = d.initialCash !== undefined ? d.initialCash : 20000000;
+                    initialSaldo = d.initialSaldo !== undefined ? d.initialSaldo : 20000000;
+                    if (d.customRates) customRates = d.customRates;
                 } else {
                     transactions = [];
-                    initialCash = 20000000;
-                    initialSaldo = 20000000;
+                    initialCash = 20000000; initialSaldo = 20000000;
                 }
                 updateUI();
             });
         }
 
-        function logout() {
-            location.reload();
+        function logout() { location.reload(); }
+
+        function openSettings() {
+            document.getElementById('setCash').value = initialCash;
+            document.getElementById('setSaldo').value = initialSaldo;
+
+            document.getElementById('bri_100k').value = customRates.bri[100];
+            document.getElementById('bri_500k').value = customRates.bri[500];
+            document.getElementById('bri_1m').value = customRates.bri[1000];
+            document.getElementById('bri_2m').value = customRates.bri[2000];
+            document.getElementById('bri_3m').value = customRates.bri[3000];
+            document.getElementById('bri_5m').value = customRates.bri[5000];
+            document.getElementById('bri_10m').value = customRates.bri[10000];
+            document.getElementById('bri_15m').value = customRates.bri[15000];
+            document.getElementById('bri_20m').value = customRates.bri[20000];
+            document.getElementById('bri_25m').value = customRates.bri[25000];
+
+            document.getElementById('other_100k').value = customRates.other[100];
+            document.getElementById('other_500k').value = customRates.other[500];
+            document.getElementById('other_1m').value = customRates.other[1000];
+            document.getElementById('other_2m').value = customRates.other[2000];
+            document.getElementById('other_3m').value = customRates.other[3000];
+            document.getElementById('other_5m').value = customRates.other[5000];
+            document.getElementById('other_10m').value = customRates.other[10000];
+            document.getElementById('other_15m').value = customRates.other[15000];
+            document.getElementById('other_20m').value = customRates.other[20000];
+            document.getElementById('other_25m').value = customRates.other[25000];
+
+            document.getElementById('ewallet_10k').value = customRates.ewallet[10];
+            document.getElementById('ewallet_50k').value = customRates.ewallet[50];
+            document.getElementById('ewallet_100k').value = customRates.ewallet[100];
+            document.getElementById('ewallet_500k').value = customRates.ewallet[500];
+            document.getElementById('ewallet_1m').value = customRates.ewallet[1000];
+            document.getElementById('ewallet_2m').value = customRates.ewallet[2000];
+            document.getElementById('ewallet_3m').value = customRates.ewallet[3000];
+            document.getElementById('ewallet_5m').value = customRates.ewallet[5000];
+
+            document.getElementById('modalSettings').classList.remove('hidden');
         }
 
-        function openModalSaldo() {
-            document.getElementById('setInitialCash').value = initialCash;
-            document.getElementById('setInitialSaldo').value = initialSaldo;
-            document.getElementById('modalSaldo').classList.remove('hidden');
+        function closeSettings() { document.getElementById('modalSettings').classList.add('hidden'); }
+
+        function saveManualBalances() {
+            const c = parseFloat(document.getElementById('setCash').value) || 0;
+            const s = parseFloat(document.getElementById('setSaldo').value) || 0;
+            db.ref('stores/' + currentPin + '/initialCash').set(c);
+            db.ref('stores/' + currentPin + '/initialSaldo').set(s);
+            closeSettings();
         }
 
-        function closeModalSaldo() {
-            document.getElementById('modalSaldo').classList.add('hidden');
-        }
-
-        function saveInitialBalances() {
-            const cashVal = parseFloat(document.getElementById('setInitialCash').value) || 0;
-            const saldoVal = parseFloat(document.getElementById('setInitialSaldo').value) || 0;
-
-            db.ref('stores/' + currentPin + '/initialCash').set(cashVal);
-            db.ref('stores/' + currentPin + '/initialSaldo').set(saldoVal);
-            closeModalSaldo();
+        function saveAdminRates() {
+            customRates = {
+                bri: {
+                    100: parseFloat(document.getElementById('bri_100k').value)||4000,
+                    500: parseFloat(document.getElementById('bri_500k').value)||5000,
+                    1000: parseFloat(document.getElementById('bri_1m').value)||6000,
+                    2000: parseFloat(document.getElementById('bri_2m').value)||8000,
+                    3000: parseFloat(document.getElementById('bri_3m').value)||10000,
+                    5000: parseFloat(document.getElementById('bri_5m').value)||15000,
+                    10000: parseFloat(document.getElementById('bri_10m').value)||25000,
+                    15000: parseFloat(document.getElementById('bri_15m').value)||35000,
+                    20000: parseFloat(document.getElementById('bri_20m').value)||40000,
+                    25000: parseFloat(document.getElementById('bri_25m').value)||50000
+                },
+                other: {
+                    100: parseFloat(document.getElementById('other_100k').value)||6500,
+                    500: parseFloat(document.getElementById('other_500k').value)||8000,
+                    1000: parseFloat(document.getElementById('other_1m').value)||10000,
+                    2000: parseFloat(document.getElementById('other_2m').value)||12000,
+                    3000: parseFloat(document.getElementById('other_3m').value)||15000,
+                    5000: parseFloat(document.getElementById('other_5m').value)||20000,
+                    10000: parseFloat(document.getElementById('other_10m').value)||30000,
+                    15000: parseFloat(document.getElementById('other_15m').value)||40000,
+                    20000: parseFloat(document.getElementById('other_20m').value)||50000,
+                    25000: parseFloat(document.getElementById('other_25m').value)||60000
+                },
+                ewallet: {
+                    10: parseFloat(document.getElementById('ewallet_10k').value)||1000,
+                    50: parseFloat(document.getElementById('ewallet_50k').value)||2000,
+                    100: parseFloat(document.getElementById('ewallet_100k').value)||3000,
+                    500: parseFloat(document.getElementById('ewallet_500k').value)||4000,
+                    1000: parseFloat(document.getElementById('ewallet_1m').value)||5000,
+                    2000: parseFloat(document.getElementById('ewallet_2m').value)||7000,
+                    3000: parseFloat(document.getElementById('ewallet_3m').value)||10000,
+                    5000: parseFloat(document.getElementById('ewallet_5m').value)||15000
+                }
+            };
+            db.ref('stores/' + currentPin + '/customRates').set(customRates);
+            closeSettings();
+            calculateFee(false);
+            alert("Seluruh Struktur Tarif Baru Berhasil Disimpan!");
         }
 
         function saveTransaction() {
-            const tx = document.getElementById('selectTx').value;
-            const nominal = parseFloat(document.getElementById('inputNominal').value) || 0;
-            const ket = document.getElementById('inputKet').value.trim();
-            const tanggal = document.getElementById('inputTanggal').value;
+            const jenis = document.getElementById('selectJenis').value;
+            const nom = rawNominalValue;
+            const ket = document.getElementById('inputKet').value.trim() || '-';
+            const tgl = document.getElementById('inputTanggal').value;
 
-            if (nominal <= 0 && !tx.includes("Tutup")) return alert("Masukkan nominal yang valid!");
+            if (nom <= 0) return alert("Nominal transaksi harus lebih dari 0!");
 
-            const { admin, profit } = calculateFee();
-            const newTx = {
-                id: Date.now(),
+            const { admin, profit } = calculateFee(true);
+            const txId = editingTxId ? editingTxId : Date.now();
+
+            const txData = {
+                id: txId,
                 mode: currentMode,
-                tx,
-                nominal,
+                jenis,
+                nominal: nom,
                 admin,
                 profit,
-                ket,
-                tanggal
+                keterangan: ket,
+                tanggal: tgl
             };
 
-            db.ref('stores/' + currentPin + '/transactions/' + newTx.id).set(newTx);
+            db.ref('stores/' + currentPin + '/transactions/' + txId).set(txData);
 
-            document.getElementById('inputNominal').value = "";
+            cancelEdit();
+            calculateFee(false);
+        }
+
+        function editTx(id) {
+            const tx = transactions.find(t => t.id === id);
+            if (!tx) return;
+
+            editingTxId = id;
+            setMode(tx.mode);
+            document.getElementById('selectJenis').value = tx.jenis;
+            
+            rawNominalValue = tx.nominal;
+            document.getElementById('inputNominalFormatted').value = tx.nominal.toLocaleString('id-ID');
+            document.getElementById('inputAdminManual').value = tx.admin;
+            document.getElementById('inputKet').value = tx.keterangan !== '-' ? tx.keterangan : '';
+            if (tx.tanggal) document.getElementById('inputTanggal').value = tx.tanggal;
+
+            calculateFee(true);
+
+            document.getElementById('formTitle').innerText = "Edit Transaksi Kasir";
+            document.getElementById('btnSubmitTx').innerHTML = "<span>✏️</span> <span>Simpan Perubahan</span>";
+            document.getElementById('btnCancelEdit').classList.remove('hidden');
+        }
+
+        function cancelEdit() {
+            editingTxId = null;
+            document.getElementById('inputNominalFormatted').value = "";
+            rawNominalValue = 0;
             document.getElementById('inputKet').value = "";
-            calculateFee();
+            document.getElementById('formTitle').innerText = "Input Transaksi Kasir";
+            document.getElementById('btnSubmitTx').innerHTML = "<span>💾</span> <span>Simpan Transaksi</span>";
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+            calculateFee(false);
         }
 
         function deleteTx(id) {
-            if (confirm("Hapus transaksi ini?")) {
+            if (confirm("Hapus transaksi ini? Angka saldo akan langsung dihitung ulang otomatis.")) {
+                if (editingTxId === id) cancelEdit();
                 db.ref('stores/' + currentPin + '/transactions/' + id).remove();
             }
         }
 
+        function exportExcel() {
+            if (transactions.length === 0) return alert("Belum ada data riwayat transaksi untuk diekspor!");
+            
+            const dataToExport = transactions.map(t => ({
+                "Tanggal": t.tanggal || '-',
+                "Mode Pembayaran": t.mode,
+                "Jenis Transaksi": t.jenis,
+                "Nominal (Rp)": t.nominal,
+                "Biaya Admin (Rp)": t.admin,
+                "Profit Toko (Rp)": t.profit,
+                "Keterangan / Nama": t.keterangan || '-'
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Transaksi");
+            XLSX.writeFile(workbook, `Laporan_Kasir_BRILink_PIN_${currentPin}.xlsx`);
+        }
+
+        function exportPDF() {
+            if (transactions.length === 0) return alert("Belum ada data riwayat transaksi untuk dicetak!");
+            document.getElementById('printDate').innerText = new Date().toLocaleDateString('id-ID');
+            window.print();
+        }
+
         function tutupBukuBulanan() {
-            if (confirm("Lakukan Tutup Buku Bulanan? Saldo akhir bulan ini akan dijadikan Saldo Awal bulan baru, dan riwayat akan diarsip.")) {
-                let currentCash = initialCash;
-                let currentSaldo = initialSaldo;
+            if (confirm("Lakukan Tutup Buku Bulanan? Saldo akhir bulan ini akan dijadikan modal awal baru, dan riwayat transaksi akan dibersihkan.")) {
+                let cashVal = initialCash;
+                let saldoVal = initialSaldo;
 
                 transactions.forEach(t => {
-                    if (t.tx === "Pelunasan Hutang") {
-                        if (t.mode === "Tunai") currentCash += t.nominal;
-                        else if (t.mode === "Non-Tunai") currentSaldo += t.nominal;
-                    } else if (t.tx === "Isi Cash Kasir (Tarik ATM)") {
-                        currentCash += t.nominal; currentSaldo -= t.nominal;
-                    } else if (t.tx === "Setor Saldo (Setor CRM)") {
-                        currentCash -= t.nominal; currentSaldo += t.nominal;
-                    } else if (t.tx === "Tarik Profit") {
-                        if (t.mode === "Tunai") currentCash -= t.nominal;
-                        else currentSaldo -= t.nominal;
-                    } else if (t.mode === "Tunai") {
-                        currentCash += (t.nominal + t.admin);
-                    } else if (t.mode === "Non-Tunai") {
-                        currentSaldo += (t.nominal + t.admin);
-                    } else if (t.mode === "HUTANG") {
-                        currentSaldo -= t.nominal;
+                    const isTarik = t.jenis.startsWith("Tarik Tunai") || t.jenis === "PKH";
+
+                    if (t.jenis === "Pelunasan Hutang") {
+                        if (t.mode === "Tunai") cashVal += t.nominal; else if (t.mode === "Non-Tunai") saldoVal += t.nominal;
+                    } else if (t.jenis === "Isi Cash Kasir (Tarik ATM)") {
+                        cashVal += t.nominal; saldoVal -= t.nominal;
+                    } else if (t.jenis === "Setor Saldo (Setor CRM)") {
+                        cashVal -= t.nominal; saldoVal += t.nominal;
+                    } else if (t.jenis === "Tarik Profit") {
+                        if (t.mode === "Tunai") cashVal -= t.nominal; else saldoVal -= t.nominal;
+                    } else {
+                        if (t.mode === "Tunai") {
+                            if (isTarik) { cashVal -= t.nominal; saldoVal += (t.nominal + t.profit); }
+                            else { cashVal += (t.nominal + t.admin); saldoVal -= t.nominal; }
+                        } else if (t.mode === "Non-Tunai") {
+                            if (isTarik) { saldoVal += (t.nominal + t.profit); }
+                            else { saldoVal += t.profit; }
+                        } else if (t.mode === "HUTANG") {
+                            if (isTarik) cashVal -= t.nominal; else saldoVal -= t.nominal;
+                        }
                     }
                 });
 
                 db.ref('stores/' + currentPin).set({
-                    initialCash: currentCash,
-                    initialSaldo: currentSaldo,
+                    initialCash: cashVal,
+                    initialSaldo: saldoVal,
+                    customRates,
                     transactions: {}
                 });
             }
         }
 
+        // FULL FIXED MUTATION ENGINE (PERBAIKAN LOGIKA DANA & TARIK TUNAI NON-TUNAI)
         function updateUI() {
-            let cash = initialCash;
-            let saldo = initialSaldo;
-            let hutang = 0;
-            let profitTotal = 0;
+            let currentCash = initialCash;
+            let currentSaldo = initialSaldo;
+            let currentHutang = 0;
+            let monthlyProfit = 0;
+            let totalProfit = 0;
+
+            transactions.sort((a, b) => a.id - b.id).forEach(t => {
+                totalProfit += t.profit;
+                monthlyProfit += t.profit;
+
+                const isTarik = t.jenis.startsWith("Tarik Tunai") || t.jenis === "PKH";
+
+                if (t.jenis === "Pelunasan Hutang") {
+                    currentHutang = Math.max(0, currentHutang - t.nominal);
+                    if (t.mode === "Tunai") currentCash += t.nominal;
+                    else if (t.mode === "Non-Tunai") currentSaldo += t.nominal;
+                } else if (t.jenis === "Isi Cash Kasir (Tarik ATM)") {
+                    currentCash += t.nominal; currentSaldo -= t.nominal;
+                } else if (t.jenis === "Setor Saldo (Setor CRM)") {
+                    currentCash -= t.nominal; currentSaldo += t.nominal;
+                } else if (t.jenis === "Tarik Profit") {
+                    if (t.mode === "Tunai") currentCash -= t.nominal; else currentSaldo -= t.nominal;
+                } else {
+                    if (t.mode === "Tunai") {
+                        if (isTarik) {
+                            currentCash -= t.nominal;
+                            currentSaldo += (t.nominal + t.profit);
+                        } else {
+                            currentCash += (t.nominal + t.admin);
+                            currentSaldo -= t.nominal;
+                        }
+                    } else if (t.mode === "Non-Tunai") {
+                        if (isTarik) {
+                            // Tarik Tunai via Transfer/Non-Tunai: Cash laci TETAP, Saldo digital bertambah Nominal + Profit
+                            currentSaldo += (t.nominal + t.profit);
+                        } else {
+                            // DANA / Transfer / PPOB Non-Tunai: Cash laci TETAP, Saldo digital bertambah Profit Bersih (Masuk transferan admin - keluar modal)
+                            currentSaldo += t.profit;
+                        }
+                    } else if (t.mode === "HUTANG") {
+                        currentHutang += (t.nominal + t.admin);
+                        if (isTarik) currentCash -= t.nominal;
+                        else currentSaldo -= t.nominal;
+                    }
+                }
+            });
+
+            const totalAsset = currentCash + currentSaldo + currentHutang;
+
+            document.getElementById('cardTotalAsset').innerText = "Rp " + totalAsset.toLocaleString('id-ID');
+            document.getElementById('cardCash').innerText = "Rp " + currentCash.toLocaleString('id-ID');
+            document.getElementById('cardSaldo').innerText = "Rp " + currentSaldo.toLocaleString('id-ID');
+            document.getElementById('cardHutang').innerText = "Rp " + currentHutang.toLocaleString('id-ID');
+            document.getElementById('cardMonthlyProfit').innerText = "Rp " + monthlyProfit.toLocaleString('id-ID');
+            document.getElementById('cardTotalProfit').innerText = "Total kumulatif: Rp " + totalProfit.toLocaleString('id-ID');
+
+            // Apply Filters for History Table
+            const filterM = document.getElementById('filterMode') ? document.getElementById('filterMode').value : 'Semua';
+            const filterJ = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : 'Semua';
+
+            const filteredList = transactions.filter(t => {
+                const matchM = filterM === 'Semua' || t.mode === filterM;
+                const matchJ = filterJ === 'Semua' || t.jenis === filterJ;
+                return matchM && matchJ;
+            });
+
+            document.getElementById('txCount').innerText = "Total " + filteredList.length + " baris pencatatan";
 
             const tbody = document.getElementById('txTableBody');
             tbody.innerHTML = "";
 
-            transactions.sort((a, b) => b.id - a.id).forEach(t => {
-                profitTotal += t.profit;
-                if (t.tx === "Pelunasan Hutang") {
-                    hutang -= t.nominal;
-                    if (t.mode === "Tunai") cash += t.nominal;
-                    else if (t.mode === "Non-Tunai") saldo += t.nominal;
-                } else if (t.tx === "Isi Cash Kasir (Tarik ATM)") {
-                    cash += t.nominal; saldo -= t.nominal;
-                } else if (t.tx === "Setor Saldo (Setor CRM)") {
-                    cash -= t.nominal; saldo += t.nominal;
-                } else if (t.tx === "Tarik Profit") {
-                    if (t.mode === "Tunai") cash -= t.nominal;
-                    else saldo -= t.nominal;
-                } else {
-                    if (t.mode === "Tunai") cash += (t.nominal + t.admin);
-                    else if (t.mode === "Non-Tunai") saldo += (t.nominal + t.admin);
-                    else if (t.mode === "HUTANG") {
-                        saldo -= t.nominal;
-                        hutang += (t.nominal + t.admin);
-                    }
-                }
-
+            filteredList.sort((a, b) => b.id - a.id).forEach(t => {
                 const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50";
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition border-b border-slate-100 dark:border-slate-700";
                 tr.innerHTML = `
-                    <td class="p-3 font-bold ${t.mode === 'HUTANG' ? 'text-amber-600' : 'text-gray-700'}">${t.mode}</td>
-                    <td class="p-3">${t.tx}</td>
-                    <td class="p-3 font-semibold">Rp ${t.nominal.toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-gray-500">Rp ${t.admin.toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-emerald-600 font-semibold">Rp ${t.profit.toLocaleString('id-ID')}</td>
-                    <td class="p-3 text-gray-500">${t.tanggal || ''} <br><span class="text-gray-800 font-medium">${t.ket || ''}</span></td>
-                    <td class="p-3 text-center">
-                        <button onclick="deleteTx(${t.id})" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+                    <td class="p-3 text-slate-500 dark:text-slate-400 font-medium">${t.tanggal || '-'}</td>
+                    <td class="p-3">
+                        <span class="bg-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-100 dark:bg-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-900/40 text-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-800 dark:text-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-400 text-[10px] font-bold px-2 py-0.5 rounded-full">${t.mode}</span>
+                    </td>
+                    <td class="p-3 font-semibold text-slate-800 dark:text-white">${t.jenis}</td>
+                    <td class="p-3 text-right font-bold text-slate-900 dark:text-white">Rp ${t.nominal.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-right text-slate-500 dark:text-slate-400">Rp ${t.admin.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-right text-emerald-600 dark:text-emerald-400 font-bold">Rp ${t.profit.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-slate-500 dark:text-slate-400 max-w-[100px] truncate" title="${t.keterangan}">${t.keterangan}</td>
+                    <td class="p-3 text-center space-x-1 no-print">
+                        <button onclick="editTx(${t.id})" class="text-blue-500 hover:text-blue-700 font-bold p-1 rounded transition" title="Edit Transaksi">✏️</button>
+                        <button onclick="deleteTx(${t.id})" class="text-red-500 hover:text-red-700 font-bold p-1 rounded transition" title="Hapus Transaksi">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-
-            document.getElementById('cardCash').innerText = "Rp " + cash.toLocaleString('id-ID');
-            document.getElementById('cardSaldo').innerText = "Rp " + saldo.toLocaleString('id-ID');
-            document.getElementById('cardHutang').innerText = "Rp " + hutang.toLocaleString('id-ID');
-            document.getElementById('cardProfit').innerText = "Rp " + profitTotal.toLocaleString('id-ID');
         }
     </script>
 </body>
