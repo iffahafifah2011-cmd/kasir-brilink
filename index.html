@@ -4,12 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agen BRILink Smart Kasir</title>
+
+    <!-- Meta & Configuration untuk PWA Android -->
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kasir BRILink">
+
+    <!-- Embedded PWA Manifest Data -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Agen BRILink Smart Kasir","short_name":"Kasir BRILink","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#1e3a8a","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/10149/10149458.png","sizes":"192x192","type":"image/png"},{"src":"https://cdn-icons-png.flaticon.com/512/10149/10149458.png","sizes":"512x512","type":"image/png"}]}'>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
+        tailwind.config = { darkMode: 'class' }
     </script>
     <!-- SheetJS (xlsx) CDN untuk Ekspor Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -27,6 +36,9 @@
             th, td { border: 1px solid #cbd5e1 !important; padding: 6px !important; text-align: left !important; }
         }
         .print-only { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans pb-12 transition-colors duration-200">
@@ -59,7 +71,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">Agen BRILink Smart</h1>
-                        <p class="text-xs text-blue-200">Kasir & Multi-Device Pembukuan Real-Time (<span id="displayPin">PIN: 1234</span>)</p>
+                        <p class="text-xs text-blue-200">Kasir & Multi-Device Pembukuan (<span id="displayPin">PIN: 1234</span>)</p>
                     </div>
                 </div>
 
@@ -160,7 +172,7 @@
                         </div>
                     </div>
 
-                    <!-- Jenis Transaksi Ditambah PLN Tagihan (EDC) -->
+                    <!-- Jenis Transaksi -->
                     <div class="mb-4">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jenis Transaksi</label>
                         <select id="selectJenis" onchange="calculateFee()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none p-3 font-medium">
@@ -294,6 +306,8 @@
                                 <option value="PLN Tagihan (EDC)">PLN Tagihan (EDC)</option>
                                 <option value="Pulsa">Pulsa</option>
                                 <option value="Paket Data">Paket Data</option>
+                                <option value="Pajak Kendaraan">Pajak Kendaraan</option>
+                                <option value="Pajak Kendaraan + Print">Pajak Kendaraan + Print</option>
                                 <option value="Pelunasan Hutang">Pelunasan Hutang</option>
                                 <option value="Isi Cash Kasir (Tarik ATM)">Isi Cash Kasir (Tarik ATM)</option>
                                 <option value="Setor Saldo (Setor CRM)">Setor Saldo (Setor CRM)</option>
@@ -325,100 +339,198 @@
         </main>
     </div>
 
-    <!-- Modal Pengaturan -->
+    <!-- Modal Pengaturan Besar Terpusat (Semua 18 Kategori) -->
     <div id="modalSettings" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-2xl w-full space-y-5 shadow-2xl border dark:border-slate-700 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
-                <h3 class="text-base font-bold text-slate-800 dark:text-white">Pengaturan Modal & Struktur Tarif Admin</h3>
-                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-3xl w-full shadow-2xl border dark:border-slate-700 max-h-[90vh] flex flex-col">
+            <!-- Header Modal -->
+            <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3 mb-4 shrink-0">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white">⚙️ Pengaturan Modal & Seluruh Tarif Admin</h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-lg">✕</button>
             </div>
             
-            <div class="space-y-3">
-                <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">Setel Ulang Saldo Manual Toko Ini</h4>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Cash Fisik (Rp)</label>
-                        <input type="number" id="setCash" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 font-bold">
+            <!-- Body Modal (Scrollable Area) -->
+            <div class="overflow-y-auto pr-2 space-y-6 flex-grow custom-scrollbar">
+                
+                <!-- Set Modal Manual -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">💵 Setel Ulang Saldo Manual Toko</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-500 mb-1">Cash Fisik (Rp)</label>
+                            <input type="number" id="setCash" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-lg p-2 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-500 mb-1">Saldo Digital (Rp)</label>
+                            <input type="number" id="setSaldo" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-lg p-2 font-bold">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Saldo Digital (Rp)</label>
-                        <input type="number" id="setSaldo" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 font-bold">
+                    <button onclick="saveManualBalances()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs transition">Simpan Modal Baru</button>
+                </div>
+
+                <div class="border-t dark:border-slate-700 pt-4">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 font-semibold uppercase tracking-wider">Struktur Tarif Admin Default</p>
+
+                    <div class="space-y-4">
+                        <!-- 1. BRI EDC -->
+                        <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                            <h5 class="font-bold text-xs text-blue-700 dark:text-blue-400 mb-2">1. BRI (Mesin EDC - Potongan System Rp 4.000)</h5>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="bri_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="bri_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="bri_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="bri_2m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="bri_3m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="bri_5m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="bri_10m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="bri_15m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="bri_20m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="bri_25m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Bank Lain EDC -->
+                        <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                            <h5 class="font-bold text-xs text-amber-700 dark:text-amber-400 mb-2">2. Bank Lain (Mesin EDC - Potongan System Rp 6.500)</h5>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="other_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="other_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="other_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="other_2m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="other_3m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="other_5m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="other_10m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="other_15m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="other_20m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="other_25m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Bank Lain Non-EDC / App -->
+                        <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                            <h5 class="font-bold text-xs text-purple-700 dark:text-purple-400 mb-2">3. Bank Lain (Non-EDC / App Direct - Profit 100%)</h5>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="other_app_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="other_app_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="other_app_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="other_app_2m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="other_app_3m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="other_app_5m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="other_app_10m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="other_app_15m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="other_app_20m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="other_app_25m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                            </div>
+                        </div>
+
+                        <!-- 4. e-Wallet -->
+                        <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                            <h5 class="font-bold text-xs text-emerald-700 dark:text-emerald-400 mb-2">4. DANA & e-Wallet</h5>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                <div><span class="text-[10px]"><= 10rb:</span><input type="number" id="ewallet_10k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">10rb - 50rb:</span><input type="number" id="ewallet_50k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">50rb - 100rb:</span><input type="number" id="ewallet_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="ewallet_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="ewallet_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="ewallet_2m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="ewallet_3m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="ewallet_5m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                            </div>
+                        </div>
+
+                        <!-- 5. PKH -->
+                        <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                            <h5 class="font-bold text-xs text-red-700 dark:text-red-400 mb-2">5. PKH (Pencairan Bansos - System Rp 10.500)</h5>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                                <div><span class="text-[10px]"><= 600rb (P1):</span><input type="number" id="pkh_600k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">600rb - 1.2jt (P2):</span><input type="number" id="pkh_1200k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">1.2jt - 1.8jt (P3):</span><input type="number" id="pkh_1800k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">1.8jt - 2.4jt (P4):</span><input type="number" id="pkh_2400k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                <div><span class="text-[10px]">2.4jt - 3jt (Maks):</span><input type="number" id="pkh_3m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Pulsa & Data -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                                <h5 class="font-bold text-xs text-cyan-700 dark:text-cyan-400 mb-2">6. Pulsa</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-[10px]"><= 50rb:</span><input type="number" id="pulsa_50k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">50rb - 100rb:</span><input type="number" id="pulsa_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">100rb - 300rb:</span><input type="number" id="pulsa_300k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">300rb - 500rb:</span><input type="number" id="pulsa_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                </div>
+                            </div>
+                            <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                                <h5 class="font-bold text-xs text-sky-700 dark:text-sky-400 mb-2">7. Paket Data</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-[10px]"><= 50rb:</span><input type="number" id="data_50k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">50rb - 100rb:</span><input type="number" id="data_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">100rb - 300rb:</span><input type="number" id="data_300k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">300rb - 500rb:</span><input type="number" id="data_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. PLN Grup -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                                <h5 class="font-bold text-xs text-yellow-600 dark:text-yellow-400 mb-2">8. PLN Token</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="pln_t_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="pln_t_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="pln_t_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="pln_t_2m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                </div>
+                            </div>
+                            <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                                <h5 class="font-bold text-xs text-yellow-600 dark:text-yellow-400 mb-2">9. PLN Tagihan (App)</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="pln_a_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="pln_a_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="pln_a_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="pln_a_2m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                </div>
+                            </div>
+                            <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                                <h5 class="font-bold text-xs text-orange-600 dark:text-orange-400 mb-2">10. PLN Tagihan (EDC)</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="pln_e_100k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="pln_e_500k" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="pln_e_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="pln_e_2m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 8. Pajak Kendaraan -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                                <h5 class="font-bold text-xs text-indigo-700 dark:text-indigo-400 mb-2">11. Pajak Kendaraan</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-[10px]"><= 1jt:</span><input type="number" id="pjk_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">1jt - 3jt:</span><input type="number" id="pjk_3m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="pjk_5m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="pjk_10m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                </div>
+                            </div>
+                            <div class="border border-slate-200 dark:border-slate-600 rounded-xl p-3 bg-slate-50 dark:bg-slate-700/30">
+                                <h5 class="font-bold text-xs text-indigo-700 dark:text-indigo-400 mb-2">12. Pajak Kendaraan + Print</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-[10px]"><= 1jt:</span><input type="number" id="pjkp_1m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">1jt - 3jt:</span><input type="number" id="pjkp_3m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="pjkp_5m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                    <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="pjkp_10m" class="w-full border border-slate-300 dark:border-slate-500 p-1.5 rounded bg-white dark:bg-slate-600 text-slate-900 dark:text-white"></div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-                <button onclick="saveManualBalances()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Modal Baru</button>
             </div>
 
-            <div class="pt-4 border-t dark:border-slate-700 space-y-4">
-                <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">⚙️ Pengaturan Tarif Admin Default Per Tier Nominal</h4>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">Sesuaikan tarif admin otomatis sesuai rentang nominal transaksi:</p>
-
-                <!-- Section 1: BRI EDC -->
-                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
-                    <h5 class="font-bold text-xs text-blue-700 dark:text-blue-400">1. Transaksi BRI (Mesin EDC - Potongan System Rp 4.000)</h5>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                        <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="bri_100k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="bri_500k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="bri_1m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="bri_2m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="bri_3m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="bri_5m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="bri_10m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="bri_15m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="bri_20m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="bri_25m" class="w-full border p-1 rounded"></div>
-                    </div>
-                </div>
-
-                <!-- Section 2: Bank Lain EDC -->
-                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
-                    <h5 class="font-bold text-xs text-amber-700 dark:text-amber-400">2. Transaksi Bank Lain (Mesin EDC - Potongan System Rp 6.500)</h5>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                        <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="other_100k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="other_500k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="other_1m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="other_2m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="other_3m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="other_5m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="other_10m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="other_15m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="other_20m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="other_25m" class="w-full border p-1 rounded"></div>
-                    </div>
-                </div>
-
-                <!-- Section 3: Bank Lain Non-EDC / App Direct -->
-                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
-                    <h5 class="font-bold text-xs text-purple-700 dark:text-purple-400">3. Transaksi Bank Lain (Non-EDC / App Direct - Profit 100%)</h5>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                        <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="other_app_100k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="other_app_500k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="other_app_1m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="other_app_2m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="other_app_3m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="other_app_5m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="other_app_10m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="other_app_15m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="other_app_20m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="other_app_25m" class="w-full border p-1 rounded"></div>
-                    </div>
-                </div>
-
-                <!-- Section 4: e-Wallet -->
-                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
-                    <h5 class="font-bold text-xs text-emerald-700 dark:text-emerald-400">4. DANA & e-Wallet</h5>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                        <div><span class="text-[10px]"><= 10rb:</span><input type="number" id="ewallet_10k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">10rb - 50rb:</span><input type="number" id="ewallet_50k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">50rb - 100rb:</span><input type="number" id="ewallet_100k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="ewallet_500k" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="ewallet_1m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="ewallet_2m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="ewallet_3m" class="w-full border p-1 rounded"></div>
-                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="ewallet_5m" class="w-full border p-1 rounded"></div>
-                    </div>
-                </div>
-
-                <button onclick="saveAdminRates()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs">💾 Simpan Seluruh Struktur Tarif Baru</button>
+            <!-- Footer Modal Button -->
+            <div class="pt-4 border-t dark:border-slate-700 mt-2 shrink-0">
+                <button onclick="saveAdminRates()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg">💾 Simpan Seluruh Struktur Tarif Baru</button>
             </div>
         </div>
     </div>
@@ -469,12 +581,22 @@
         let initialSaldo = 20000000;
         let transactions = [];
         
-        let customRates = {
+        // DEFAULT STRUCTURE: Auto-Merge base structure so new fields don't break old accounts
+        const defaultRates = {
             bri: { 100:4000, 500:5000, 1000:6000, 2000:8000, 3000:10000, 5000:15000, 10000:25000, 15000:35000, 20000:40000, 25000:50000 },
             other: { 100:6500, 500:8000, 1000:10000, 2000:12000, 3000:15000, 5000:20000, 10000:30000, 15000:40000, 20000:50000, 25000:60000 },
             otherApp: { 100:5000, 500:7000, 1000:8000, 2000:10000, 3000:12000, 5000:18000, 10000:25000, 15000:35000, 20000:45000, 25000:55000 },
-            ewallet: { 10:1000, 50:2000, 100:3000, 500:4000, 1000:5000, 2000:7000, 3000:10000, 5000:15000 }
+            ewallet: { 10:1000, 50:2000, 100:3000, 500:4000, 1000:5000, 2000:7000, 3000:10000, 5000:15000 },
+            pkh: { 600:15000, 1200:20000, 1800:25000, 2400:30000, 3000:35000 },
+            pulsa: { 50:2000, 100:3000, 300:4000, 500:5000 },
+            paketData: { 50:2000, 100:3000, 300:4000, 500:5000 },
+            plnToken: { 100:3000, 500:4000, 1000:5000, 2000:7000 },
+            plnTagihanApp: { 100:3000, 500:4000, 1000:5000, 2000:7000 },
+            plnTagihanEdc: { 100:4000, 500:5000, 1000:6000, 2000:8000 },
+            pajak: { 1000:5000, 3000:10000, 5000:15000, 10000:25000 },
+            pajakPrint: { 1000:7000, 3000:12000, 5000:17000, 10000:27000 }
         };
+        let customRates = JSON.parse(JSON.stringify(defaultRates));
 
         document.getElementById('inputTanggal').valueAsDate = new Date();
 
@@ -506,7 +628,7 @@
             calculateFee(false);
         }
 
-        // CALCULATION ENGINE WITH EDC VS NON-EDC & PLN EDC DISTINCTION
+        // CALCULATION ENGINE 
         function calculateFee(isManualAdmin = false) {
             const jenis = document.getElementById('selectJenis').value;
             const nom = rawNominalValue;
@@ -515,88 +637,44 @@
 
             if (nom > 0) {
                 if (jenis.includes("BRI (EDC)")) {
-                    systemCost = 4000;
-                    const r = customRates.bri;
-                    if (nom <= 100000) admin = r[100];
-                    else if (nom <= 500000) admin = r[500];
-                    else if (nom <= 1000000) admin = r[1000];
-                    else if (nom <= 2000000) admin = r[2000];
-                    else if (nom <= 3000000) admin = r[3000];
-                    else if (nom <= 5000000) admin = r[5000];
-                    else if (nom <= 10000000) admin = r[10000];
-                    else if (nom <= 15000000) admin = r[15000];
-                    else if (nom <= 20000000) admin = r[20000];
-                    else admin = r[25000];
+                    systemCost = 4000; const r = customRates.bri;
+                    if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else if (nom <= 2000000) admin = r[2000]; else if (nom <= 3000000) admin = r[3000]; else if (nom <= 5000000) admin = r[5000]; else if (nom <= 10000000) admin = r[10000]; else if (nom <= 15000000) admin = r[15000]; else if (nom <= 20000000) admin = r[20000]; else admin = r[25000];
                 } else if (jenis.includes("BRI (Non-EDC / App)")) {
-                    systemCost = 0;
-                    const r = customRates.bri;
-                    if (nom <= 100000) admin = r[100];
-                    else if (nom <= 500000) admin = r[500];
-                    else if (nom <= 1000000) admin = r[1000];
-                    else if (nom <= 2000000) admin = r[2000];
-                    else if (nom <= 3000000) admin = r[3000];
-                    else if (nom <= 5000000) admin = r[5000];
-                    else if (nom <= 10000000) admin = r[10000];
-                    else if (nom <= 15000000) admin = r[15000];
-                    else if (nom <= 20000000) admin = r[20000];
-                    else admin = r[25000];
+                    systemCost = 0; const r = customRates.bri;
+                    if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else if (nom <= 2000000) admin = r[2000]; else if (nom <= 3000000) admin = r[3000]; else if (nom <= 5000000) admin = r[5000]; else if (nom <= 10000000) admin = r[10000]; else if (nom <= 15000000) admin = r[15000]; else if (nom <= 20000000) admin = r[20000]; else admin = r[25000];
                 } else if (jenis.includes("Bank Lain (EDC)")) {
-                    systemCost = 6500;
-                    const r = customRates.other;
-                    if (nom <= 100000) admin = r[100];
-                    else if (nom <= 500000) admin = r[500];
-                    else if (nom <= 1000000) admin = r[1000];
-                    else if (nom <= 2000000) admin = r[2000];
-                    else if (nom <= 3000000) admin = r[3000];
-                    else if (nom <= 5000000) admin = r[5000];
-                    else if (nom <= 10000000) admin = r[10000];
-                    else if (nom <= 15000000) admin = r[15000];
-                    else if (nom <= 20000000) admin = r[20000];
-                    else admin = r[25000];
+                    systemCost = 6500; const r = customRates.other;
+                    if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else if (nom <= 2000000) admin = r[2000]; else if (nom <= 3000000) admin = r[3000]; else if (nom <= 5000000) admin = r[5000]; else if (nom <= 10000000) admin = r[10000]; else if (nom <= 15000000) admin = r[15000]; else if (nom <= 20000000) admin = r[20000]; else admin = r[25000];
                 } else if (jenis.includes("Bank Lain (Non-EDC / App)")) {
-                    systemCost = 0;
-                    const r = customRates.otherApp || customRates.other;
-                    if (nom <= 100000) admin = r[100];
-                    else if (nom <= 500000) admin = r[500];
-                    else if (nom <= 1000000) admin = r[1000];
-                    else if (nom <= 2000000) admin = r[2000];
-                    else if (nom <= 3000000) admin = r[3000];
-                    else if (nom <= 5000000) admin = r[5000];
-                    else if (nom <= 10000000) admin = r[10000];
-                    else if (nom <= 15000000) admin = r[15000];
-                    else if (nom <= 20000000) admin = r[20000];
-                    else admin = r[25000];
+                    systemCost = 0; const r = customRates.otherApp;
+                    if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else if (nom <= 2000000) admin = r[2000]; else if (nom <= 3000000) admin = r[3000]; else if (nom <= 5000000) admin = r[5000]; else if (nom <= 10000000) admin = r[10000]; else if (nom <= 15000000) admin = r[15000]; else if (nom <= 20000000) admin = r[20000]; else admin = r[25000];
                 } else if (jenis === "PKH") {
-                    systemCost = 10500;
-                    if (nom <= 600000) admin = 15000;
-                    else if (nom <= 1200000) admin = 20000;
-                    else if (nom <= 1800000) admin = 25000;
-                    else if (nom <= 2400000) admin = 30000;
-                    else admin = 35000;
+                    systemCost = 10500; const r = customRates.pkh;
+                    if (nom <= 600000) admin = r[600]; else if (nom <= 1200000) admin = r[1200]; else if (nom <= 1800000) admin = r[1800]; else if (nom <= 2400000) admin = r[2400]; else admin = r[3000];
                 } else if (jenis === "DANA & e-Wallet") {
-                    systemCost = 0;
-                    const r = customRates.ewallet;
-                    if (nom <= 10000) admin = r[10];
-                    else if (nom <= 50000) admin = r[50];
-                    else if (nom <= 100000) admin = r[100];
-                    else if (nom <= 500000) admin = r[500];
-                    else if (nom <= 1000000) admin = r[1000];
-                    else if (nom <= 2000000) admin = r[2000];
-                    else if (nom <= 3000000) admin = r[3000];
-                    else admin = r[5000];
+                    systemCost = 0; const r = customRates.ewallet;
+                    if (nom <= 10000) admin = r[10]; else if (nom <= 50000) admin = r[50]; else if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else if (nom <= 2000000) admin = r[2000]; else if (nom <= 3000000) admin = r[3000]; else admin = r[5000];
+                } else if (jenis === "Pulsa") {
+                    systemCost = 0; const r = customRates.pulsa;
+                    if (nom <= 50000) admin = r[50]; else if (nom <= 100000) admin = r[100]; else if (nom <= 300000) admin = r[300]; else admin = r[500];
+                } else if (jenis === "Paket Data") {
+                    systemCost = 0; const r = customRates.paketData;
+                    if (nom <= 50000) admin = r[50]; else if (nom <= 100000) admin = r[100]; else if (nom <= 300000) admin = r[300]; else admin = r[500];
+                } else if (jenis === "PLN Token") {
+                    systemCost = 0; const r = customRates.plnToken;
+                    if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else admin = r[2000];
+                } else if (jenis === "PLN Tagihan (Non-EDC / App)") {
+                    systemCost = 0; const r = customRates.plnTagihanApp;
+                    if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else admin = r[2000];
                 } else if (jenis === "PLN Tagihan (EDC)") {
-                    systemCost = 3000; // Biaya Admin EDC Mesin
-                    if (nom <= 100000) admin = 4000;
-                    else if (nom <= 500000) admin = 5000;
-                    else if (nom <= 1000000) admin = 6000;
-                    else admin = 8000;
-                } else if (["Pulsa", "Paket Data", "PLN Token", "PLN Tagihan (Non-EDC / App)"].includes(jenis)) {
-                    systemCost = 0;
-                    admin = 3000;
+                    systemCost = 3000; const r = customRates.plnTagihanEdc;
+                    if (nom <= 100000) admin = r[100]; else if (nom <= 500000) admin = r[500]; else if (nom <= 1000000) admin = r[1000]; else admin = r[2000];
                 } else if (jenis === "Pajak Kendaraan") {
-                    systemCost = 0; admin = 5000;
+                    systemCost = 0; const r = customRates.pajak;
+                    if (nom <= 1000000) admin = r[1000]; else if (nom <= 3000000) admin = r[3000]; else if (nom <= 5000000) admin = r[5000]; else admin = r[10000];
                 } else if (jenis === "Pajak Kendaraan + Print") {
-                    systemCost = 0; admin = 7000;
+                    systemCost = 0; const r = customRates.pajakPrint;
+                    if (nom <= 1000000) admin = r[1000]; else if (nom <= 3000000) admin = r[3000]; else if (nom <= 5000000) admin = r[5000]; else admin = r[10000];
                 }
             }
 
@@ -641,10 +719,14 @@
                     transactions = d.transactions ? Object.values(d.transactions) : [];
                     initialCash = d.initialCash !== undefined ? d.initialCash : 20000000;
                     initialSaldo = d.initialSaldo !== undefined ? d.initialSaldo : 20000000;
-                    if (d.customRates) customRates = d.customRates;
+                    
+                    if (d.customRates) {
+                        customRates = { ...defaultRates, ...d.customRates };
+                    }
                 } else {
                     transactions = [];
                     initialCash = 20000000; initialSaldo = 20000000;
+                    customRates = JSON.parse(JSON.stringify(defaultRates));
                 }
                 updateUI();
             });
@@ -656,48 +738,18 @@
             document.getElementById('setCash').value = initialCash;
             document.getElementById('setSaldo').value = initialSaldo;
 
-            document.getElementById('bri_100k').value = customRates.bri[100];
-            document.getElementById('bri_500k').value = customRates.bri[500];
-            document.getElementById('bri_1m').value = customRates.bri[1000];
-            document.getElementById('bri_2m').value = customRates.bri[2000];
-            document.getElementById('bri_3m').value = customRates.bri[3000];
-            document.getElementById('bri_5m').value = customRates.bri[5000];
-            document.getElementById('bri_10m').value = customRates.bri[10000];
-            document.getElementById('bri_15m').value = customRates.bri[15000];
-            document.getElementById('bri_20m').value = customRates.bri[20000];
-            document.getElementById('bri_25m').value = customRates.bri[25000];
-
-            document.getElementById('other_100k').value = customRates.other[100];
-            document.getElementById('other_500k').value = customRates.other[500];
-            document.getElementById('other_1m').value = customRates.other[1000];
-            document.getElementById('other_2m').value = customRates.other[2000];
-            document.getElementById('other_3m').value = customRates.other[3000];
-            document.getElementById('other_5m').value = customRates.other[5000];
-            document.getElementById('other_10m').value = customRates.other[10000];
-            document.getElementById('other_15m').value = customRates.other[15000];
-            document.getElementById('other_20m').value = customRates.other[20000];
-            document.getElementById('other_25m').value = customRates.other[25000];
-
-            const rApp = customRates.otherApp || { 100:5000, 500:7000, 1000:8000, 2000:10000, 3000:12000, 5000:18000, 10000:25000, 15000:35000, 20000:45000, 25000:55000 };
-            document.getElementById('other_app_100k').value = rApp[100];
-            document.getElementById('other_app_500k').value = rApp[500];
-            document.getElementById('other_app_1m').value = rApp[1000];
-            document.getElementById('other_app_2m').value = rApp[2000];
-            document.getElementById('other_app_3m').value = rApp[3000];
-            document.getElementById('other_app_5m').value = rApp[5000];
-            document.getElementById('other_app_10m').value = rApp[10000];
-            document.getElementById('other_app_15m').value = rApp[15000];
-            document.getElementById('other_app_20m').value = rApp[20000];
-            document.getElementById('other_app_25m').value = rApp[25000];
-
-            document.getElementById('ewallet_10k').value = customRates.ewallet[10];
-            document.getElementById('ewallet_50k').value = customRates.ewallet[50];
-            document.getElementById('ewallet_100k').value = customRates.ewallet[100];
-            document.getElementById('ewallet_500k').value = customRates.ewallet[500];
-            document.getElementById('ewallet_1m').value = customRates.ewallet[1000];
-            document.getElementById('ewallet_2m').value = customRates.ewallet[2000];
-            document.getElementById('ewallet_3m').value = customRates.ewallet[3000];
-            document.getElementById('ewallet_5m').value = customRates.ewallet[5000];
+            document.getElementById('bri_100k').value = customRates.bri[100]; document.getElementById('bri_500k').value = customRates.bri[500]; document.getElementById('bri_1m').value = customRates.bri[1000]; document.getElementById('bri_2m').value = customRates.bri[2000]; document.getElementById('bri_3m').value = customRates.bri[3000]; document.getElementById('bri_5m').value = customRates.bri[5000]; document.getElementById('bri_10m').value = customRates.bri[10000]; document.getElementById('bri_15m').value = customRates.bri[15000]; document.getElementById('bri_20m').value = customRates.bri[20000]; document.getElementById('bri_25m').value = customRates.bri[25000];
+            document.getElementById('other_100k').value = customRates.other[100]; document.getElementById('other_500k').value = customRates.other[500]; document.getElementById('other_1m').value = customRates.other[1000]; document.getElementById('other_2m').value = customRates.other[2000]; document.getElementById('other_3m').value = customRates.other[3000]; document.getElementById('other_5m').value = customRates.other[5000]; document.getElementById('other_10m').value = customRates.other[10000]; document.getElementById('other_15m').value = customRates.other[15000]; document.getElementById('other_20m').value = customRates.other[20000]; document.getElementById('other_25m').value = customRates.other[25000];
+            document.getElementById('other_app_100k').value = customRates.otherApp[100]; document.getElementById('other_app_500k').value = customRates.otherApp[500]; document.getElementById('other_app_1m').value = customRates.otherApp[1000]; document.getElementById('other_app_2m').value = customRates.otherApp[2000]; document.getElementById('other_app_3m').value = customRates.otherApp[3000]; document.getElementById('other_app_5m').value = customRates.otherApp[5000]; document.getElementById('other_app_10m').value = customRates.otherApp[10000]; document.getElementById('other_app_15m').value = customRates.otherApp[15000]; document.getElementById('other_app_20m').value = customRates.otherApp[20000]; document.getElementById('other_app_25m').value = customRates.otherApp[25000];
+            document.getElementById('ewallet_10k').value = customRates.ewallet[10]; document.getElementById('ewallet_50k').value = customRates.ewallet[50]; document.getElementById('ewallet_100k').value = customRates.ewallet[100]; document.getElementById('ewallet_500k').value = customRates.ewallet[500]; document.getElementById('ewallet_1m').value = customRates.ewallet[1000]; document.getElementById('ewallet_2m').value = customRates.ewallet[2000]; document.getElementById('ewallet_3m').value = customRates.ewallet[3000]; document.getElementById('ewallet_5m').value = customRates.ewallet[5000];
+            document.getElementById('pkh_600k').value = customRates.pkh[600]; document.getElementById('pkh_1200k').value = customRates.pkh[1200]; document.getElementById('pkh_1800k').value = customRates.pkh[1800]; document.getElementById('pkh_2400k').value = customRates.pkh[2400]; document.getElementById('pkh_3m').value = customRates.pkh[3000];
+            document.getElementById('pulsa_50k').value = customRates.pulsa[50]; document.getElementById('pulsa_100k').value = customRates.pulsa[100]; document.getElementById('pulsa_300k').value = customRates.pulsa[300]; document.getElementById('pulsa_500k').value = customRates.pulsa[500];
+            document.getElementById('data_50k').value = customRates.paketData[50]; document.getElementById('data_100k').value = customRates.paketData[100]; document.getElementById('data_300k').value = customRates.paketData[300]; document.getElementById('data_500k').value = customRates.paketData[500];
+            document.getElementById('pln_t_100k').value = customRates.plnToken[100]; document.getElementById('pln_t_500k').value = customRates.plnToken[500]; document.getElementById('pln_t_1m').value = customRates.plnToken[1000]; document.getElementById('pln_t_2m').value = customRates.plnToken[2000];
+            document.getElementById('pln_a_100k').value = customRates.plnTagihanApp[100]; document.getElementById('pln_a_500k').value = customRates.plnTagihanApp[500]; document.getElementById('pln_a_1m').value = customRates.plnTagihanApp[1000]; document.getElementById('pln_a_2m').value = customRates.plnTagihanApp[2000];
+            document.getElementById('pln_e_100k').value = customRates.plnTagihanEdc[100]; document.getElementById('pln_e_500k').value = customRates.plnTagihanEdc[500]; document.getElementById('pln_e_1m').value = customRates.plnTagihanEdc[1000]; document.getElementById('pln_e_2m').value = customRates.plnTagihanEdc[2000];
+            document.getElementById('pjk_1m').value = customRates.pajak[1000]; document.getElementById('pjk_3m').value = customRates.pajak[3000]; document.getElementById('pjk_5m').value = customRates.pajak[5000]; document.getElementById('pjk_10m').value = customRates.pajak[10000];
+            document.getElementById('pjkp_1m').value = customRates.pajakPrint[1000]; document.getElementById('pjkp_3m').value = customRates.pajakPrint[3000]; document.getElementById('pjkp_5m').value = customRates.pajakPrint[5000]; document.getElementById('pjkp_10m').value = customRates.pajakPrint[10000];
 
             document.getElementById('modalSettings').classList.remove('hidden');
         }
@@ -715,56 +767,70 @@
         function saveAdminRates() {
             customRates = {
                 bri: {
-                    100: parseFloat(document.getElementById('bri_100k').value)||4000,
-                    500: parseFloat(document.getElementById('bri_500k').value)||5000,
-                    1000: parseFloat(document.getElementById('bri_1m').value)||6000,
-                    2000: parseFloat(document.getElementById('bri_2m').value)||8000,
-                    3000: parseFloat(document.getElementById('bri_3m').value)||10000,
-                    5000: parseFloat(document.getElementById('bri_5m').value)||15000,
-                    10000: parseFloat(document.getElementById('bri_10m').value)||25000,
-                    15000: parseFloat(document.getElementById('bri_15m').value)||35000,
-                    20000: parseFloat(document.getElementById('bri_20m').value)||40000,
-                    25000: parseFloat(document.getElementById('bri_25m').value)||50000
+                    100: parseFloat(document.getElementById('bri_100k').value)||4000, 500: parseFloat(document.getElementById('bri_500k').value)||5000,
+                    1000: parseFloat(document.getElementById('bri_1m').value)||6000, 2000: parseFloat(document.getElementById('bri_2m').value)||8000,
+                    3000: parseFloat(document.getElementById('bri_3m').value)||10000, 5000: parseFloat(document.getElementById('bri_5m').value)||15000,
+                    10000: parseFloat(document.getElementById('bri_10m').value)||25000, 15000: parseFloat(document.getElementById('bri_15m').value)||35000,
+                    20000: parseFloat(document.getElementById('bri_20m').value)||40000, 25000: parseFloat(document.getElementById('bri_25m').value)||50000
                 },
                 other: {
-                    100: parseFloat(document.getElementById('other_100k').value)||6500,
-                    500: parseFloat(document.getElementById('other_500k').value)||8000,
-                    1000: parseFloat(document.getElementById('other_1m').value)||10000,
-                    2000: parseFloat(document.getElementById('other_2m').value)||12000,
-                    3000: parseFloat(document.getElementById('other_3m').value)||15000,
-                    5000: parseFloat(document.getElementById('other_5m').value)||20000,
-                    10000: parseFloat(document.getElementById('other_10m').value)||30000,
-                    15000: parseFloat(document.getElementById('other_15m').value)||40000,
-                    20000: parseFloat(document.getElementById('other_20m').value)||50000,
-                    25000: parseFloat(document.getElementById('other_25m').value)||60000
+                    100: parseFloat(document.getElementById('other_100k').value)||6500, 500: parseFloat(document.getElementById('other_500k').value)||8000,
+                    1000: parseFloat(document.getElementById('other_1m').value)||10000, 2000: parseFloat(document.getElementById('other_2m').value)||12000,
+                    3000: parseFloat(document.getElementById('other_3m').value)||15000, 5000: parseFloat(document.getElementById('other_5m').value)||20000,
+                    10000: parseFloat(document.getElementById('other_10m').value)||30000, 15000: parseFloat(document.getElementById('other_15m').value)||40000,
+                    20000: parseFloat(document.getElementById('other_20m').value)||50000, 25000: parseFloat(document.getElementById('other_25m').value)||60000
                 },
                 otherApp: {
-                    100: parseFloat(document.getElementById('other_app_100k').value)||5000,
-                    500: parseFloat(document.getElementById('other_app_500k').value)||7000,
-                    1000: parseFloat(document.getElementById('other_app_1m').value)||8000,
-                    2000: parseFloat(document.getElementById('other_app_2m').value)||10000,
-                    3000: parseFloat(document.getElementById('other_app_3m').value)||12000,
-                    5000: parseFloat(document.getElementById('other_app_5m').value)||18000,
-                    10000: parseFloat(document.getElementById('other_app_10m').value)||25000,
-                    15000: parseFloat(document.getElementById('other_app_15m').value)||35000,
-                    20000: parseFloat(document.getElementById('other_app_20m').value)||45000,
-                    25000: parseFloat(document.getElementById('other_app_25m').value)||55000
+                    100: parseFloat(document.getElementById('other_app_100k').value)||5000, 500: parseFloat(document.getElementById('other_app_500k').value)||7000,
+                    1000: parseFloat(document.getElementById('other_app_1m').value)||8000, 2000: parseFloat(document.getElementById('other_app_2m').value)||10000,
+                    3000: parseFloat(document.getElementById('other_app_3m').value)||12000, 5000: parseFloat(document.getElementById('other_app_5m').value)||18000,
+                    10000: parseFloat(document.getElementById('other_app_10m').value)||25000, 15000: parseFloat(document.getElementById('other_app_15m').value)||35000,
+                    20000: parseFloat(document.getElementById('other_app_20m').value)||45000, 25000: parseFloat(document.getElementById('other_app_25m').value)||55000
                 },
                 ewallet: {
-                    10: parseFloat(document.getElementById('ewallet_10k').value)||1000,
-                    50: parseFloat(document.getElementById('ewallet_50k').value)||2000,
-                    100: parseFloat(document.getElementById('ewallet_100k').value)||3000,
-                    500: parseFloat(document.getElementById('ewallet_500k').value)||4000,
-                    1000: parseFloat(document.getElementById('ewallet_1m').value)||5000,
-                    2000: parseFloat(document.getElementById('ewallet_2m').value)||7000,
-                    3000: parseFloat(document.getElementById('ewallet_3m').value)||10000,
-                    5000: parseFloat(document.getElementById('ewallet_5m').value)||15000
+                    10: parseFloat(document.getElementById('ewallet_10k').value)||1000, 50: parseFloat(document.getElementById('ewallet_50k').value)||2000,
+                    100: parseFloat(document.getElementById('ewallet_100k').value)||3000, 500: parseFloat(document.getElementById('ewallet_500k').value)||4000,
+                    1000: parseFloat(document.getElementById('ewallet_1m').value)||5000, 2000: parseFloat(document.getElementById('ewallet_2m').value)||7000,
+                    3000: parseFloat(document.getElementById('ewallet_3m').value)||10000, 5000: parseFloat(document.getElementById('ewallet_5m').value)||15000
+                },
+                pkh: {
+                    600: parseFloat(document.getElementById('pkh_600k').value)||15000, 1200: parseFloat(document.getElementById('pkh_1200k').value)||20000,
+                    1800: parseFloat(document.getElementById('pkh_1800k').value)||25000, 2400: parseFloat(document.getElementById('pkh_2400k').value)||30000,
+                    3000: parseFloat(document.getElementById('pkh_3m').value)||35000
+                },
+                pulsa: {
+                    50: parseFloat(document.getElementById('pulsa_50k').value)||2000, 100: parseFloat(document.getElementById('pulsa_100k').value)||3000,
+                    300: parseFloat(document.getElementById('pulsa_300k').value)||4000, 500: parseFloat(document.getElementById('pulsa_500k').value)||5000
+                },
+                paketData: {
+                    50: parseFloat(document.getElementById('data_50k').value)||2000, 100: parseFloat(document.getElementById('data_100k').value)||3000,
+                    300: parseFloat(document.getElementById('data_300k').value)||4000, 500: parseFloat(document.getElementById('data_500k').value)||5000
+                },
+                plnToken: {
+                    100: parseFloat(document.getElementById('pln_t_100k').value)||3000, 500: parseFloat(document.getElementById('pln_t_500k').value)||4000,
+                    1000: parseFloat(document.getElementById('pln_t_1m').value)||5000, 2000: parseFloat(document.getElementById('pln_t_2m').value)||7000
+                },
+                plnTagihanApp: {
+                    100: parseFloat(document.getElementById('pln_a_100k').value)||3000, 500: parseFloat(document.getElementById('pln_a_500k').value)||4000,
+                    1000: parseFloat(document.getElementById('pln_a_1m').value)||5000, 2000: parseFloat(document.getElementById('pln_a_2m').value)||7000
+                },
+                plnTagihanEdc: {
+                    100: parseFloat(document.getElementById('pln_e_100k').value)||4000, 500: parseFloat(document.getElementById('pln_e_500k').value)||5000,
+                    1000: parseFloat(document.getElementById('pln_e_1m').value)||6000, 2000: parseFloat(document.getElementById('pln_e_2m').value)||8000
+                },
+                pajak: {
+                    1000: parseFloat(document.getElementById('pjk_1m').value)||5000, 3000: parseFloat(document.getElementById('pjk_3m').value)||10000,
+                    5000: parseFloat(document.getElementById('pjk_5m').value)||15000, 10000: parseFloat(document.getElementById('pjk_10m').value)||25000
+                },
+                pajakPrint: {
+                    1000: parseFloat(document.getElementById('pjkp_1m').value)||7000, 3000: parseFloat(document.getElementById('pjkp_3m').value)||12000,
+                    5000: parseFloat(document.getElementById('pjkp_5m').value)||17000, 10000: parseFloat(document.getElementById('pjkp_10m').value)||27000
                 }
             };
             db.ref('stores/' + currentPin + '/customRates').set(customRates);
             closeSettings();
             calculateFee(false);
-            alert("Seluruh Struktur Tarif Baru Berhasil Disimpan!");
+            alert("Seluruh Struktur Tarif Baru Berhasil Disimpan & Tersinkronisasi!");
         }
 
         function saveTransaction() {
@@ -836,17 +902,10 @@
 
         function exportExcel() {
             if (transactions.length === 0) return alert("Belum ada data riwayat transaksi untuk diekspor!");
-            
             const dataToExport = transactions.map(t => ({
-                "Tanggal": t.tanggal || '-',
-                "Mode Pembayaran": t.mode,
-                "Jenis Transaksi": t.jenis,
-                "Nominal (Rp)": t.nominal,
-                "Biaya Admin (Rp)": t.admin,
-                "Profit Toko (Rp)": t.profit,
-                "Keterangan / Nama": t.keterangan || '-'
+                "Tanggal": t.tanggal || '-', "Mode Pembayaran": t.mode, "Jenis Transaksi": t.jenis, "Nominal (Rp)": t.nominal,
+                "Biaya Admin (Rp)": t.admin, "Profit Toko (Rp)": t.profit, "Keterangan / Nama": t.keterangan || '-'
             }));
-
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Transaksi");
@@ -889,10 +948,7 @@
                 });
 
                 db.ref('stores/' + currentPin).set({
-                    initialCash: cashVal,
-                    initialSaldo: saldoVal,
-                    customRates,
-                    transactions: {}
+                    initialCash: cashVal, initialSaldo: saldoVal, customRates, transactions: {}
                 });
             }
         }
@@ -912,8 +968,7 @@
 
                 if (t.jenis === "Pelunasan Hutang") {
                     currentHutang = Math.max(0, currentHutang - t.nominal);
-                    if (t.mode === "Tunai") currentCash += t.nominal;
-                    else if (t.mode === "Non-Tunai") currentSaldo += t.nominal;
+                    if (t.mode === "Tunai") currentCash += t.nominal; else if (t.mode === "Non-Tunai") currentSaldo += t.nominal;
                 } else if (t.jenis === "Isi Cash Kasir (Tarik ATM)") {
                     currentCash += t.nominal; currentSaldo -= t.nominal;
                 } else if (t.jenis === "Setor Saldo (Setor CRM)") {
@@ -922,23 +977,13 @@
                     if (t.mode === "Tunai") currentCash -= t.nominal; else currentSaldo -= t.nominal;
                 } else {
                     if (t.mode === "Tunai") {
-                        if (isTarik) {
-                            currentCash -= t.nominal;
-                            currentSaldo += (t.nominal + t.profit);
-                        } else {
-                            currentCash += (t.nominal + t.admin);
-                            currentSaldo -= t.nominal;
-                        }
+                        if (isTarik) { currentCash -= t.nominal; currentSaldo += (t.nominal + t.profit); }
+                        else { currentCash += (t.nominal + t.admin); currentSaldo -= t.nominal; }
                     } else if (t.mode === "Non-Tunai") {
-                        if (isTarik) {
-                            currentSaldo += (t.nominal + t.profit);
-                        } else {
-                            currentSaldo += t.profit;
-                        }
+                        if (isTarik) { currentSaldo += (t.nominal + t.profit); } else { currentSaldo += t.profit; }
                     } else if (t.mode === "HUTANG") {
                         currentHutang += (t.nominal + t.admin);
-                        if (isTarik) currentCash -= t.nominal;
-                        else currentSaldo -= t.nominal;
+                        if (isTarik) currentCash -= t.nominal; else currentSaldo -= t.nominal;
                     }
                 }
             });
@@ -956,13 +1001,10 @@
             const filterJ = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : 'Semua';
 
             const filteredList = transactions.filter(t => {
-                const matchM = filterM === 'Semua' || t.mode === filterM;
-                const matchJ = filterJ === 'Semua' || t.jenis === filterJ;
-                return matchM && matchJ;
+                return (filterM === 'Semua' || t.mode === filterM) && (filterJ === 'Semua' || t.jenis === filterJ);
             });
 
             document.getElementById('txCount').innerText = "Total " + filteredList.length + " baris pencatatan";
-
             const tbody = document.getElementById('txTableBody');
             tbody.innerHTML = "";
 
@@ -971,21 +1013,32 @@
                 tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition border-b border-slate-100 dark:border-slate-700";
                 tr.innerHTML = `
                     <td class="p-3 text-slate-500 dark:text-slate-400 font-medium">${t.tanggal || '-'}</td>
-                    <td class="p-3">
-                        <span class="bg-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-100 dark:bg-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-900/40 text-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-800 dark:text-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-400 text-[10px] font-bold px-2 py-0.5 rounded-full">${t.mode}</span>
-                    </td>
+                    <td class="p-3"><span class="bg-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-100 dark:bg-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-900/40 text-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-800 dark:text-${t.mode === 'Tunai' ? 'emerald' : t.mode === 'Non-Tunai' ? 'blue' : 'amber'}-400 text-[10px] font-bold px-2 py-0.5 rounded-full">${t.mode}</span></td>
                     <td class="p-3 font-semibold text-slate-800 dark:text-white">${t.jenis}</td>
                     <td class="p-3 text-right font-bold text-slate-900 dark:text-white">Rp ${t.nominal.toLocaleString('id-ID')}</td>
                     <td class="p-3 text-right text-slate-500 dark:text-slate-400">Rp ${t.admin.toLocaleString('id-ID')}</td>
                     <td class="p-3 text-right text-emerald-600 dark:text-emerald-400 font-bold">Rp ${t.profit.toLocaleString('id-ID')}</td>
                     <td class="p-3 text-slate-500 dark:text-slate-400 max-w-[100px] truncate" title="${t.keterangan}">${t.keterangan}</td>
                     <td class="p-3 text-center space-x-1 no-print">
-                        <button onclick="editTx(${t.id})" class="text-blue-500 hover:text-blue-700 font-bold p-1 rounded transition" title="Edit Transaksi">✏️</button>
-                        <button onclick="deleteTx(${t.id})" class="text-red-500 hover:text-red-700 font-bold p-1 rounded transition" title="Hapus Transaksi">🗑️</button>
+                        <button onclick="editTx(${t.id})" class="text-blue-500 hover:text-blue-700 font-bold p-1 rounded transition">✏️</button>
+                        <button onclick="deleteTx(${t.id})" class="text-red-500 hover:text-red-700 font-bold p-1 rounded transition">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+    </script>
+    
+    <!-- PWA Service Worker Embedded Script (Syarat Wajib Install App di Android) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', (e) => { self.skipWaiting(); });
+                self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+                self.addEventListener('fetch', (e) => { });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
         }
     </script>
 </body>
