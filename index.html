@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kasir BRILink</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK (Version 9+ Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen pb-10">
+
+    <!-- Screen PIN Authentication -->
+    <div id="pinScreen" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Kasir Agen BRILink</h2>
+            <p class="text-sm text-gray-500 mb-6">Masukkan PIN Toko / Cabang untuk masuk</p>
+            <input type="password" id="inputPin" placeholder="Masukkan PIN (misal: 1234)" class="w-full text-center text-2xl tracking-widest border-2 border-gray-300 rounded-xl p-3 mb-4 focus:outline-none focus:border-blue-600">
+            <button onclick="loginWithPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition">Masuk ke Toko</button>
+        </div>
+    </div>
+
+    <!-- Modal Pop-up Atur Saldo Awal -->
+    <div id="modalSaldo" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">⚙️ Atur Modal Awal Toko</h3>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Cash Tunai Awal (Rp)</label>
+                    <input type="number" id="setInitialCash" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Saldo Digital Awal (Rp)</label>
+                    <input type="number" id="setInitialSaldo" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeModalSaldo()" class="w-1/2 bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm">Batal</button>
+                <button onclick="saveInitialBalances()" class="w-1/2 bg-blue-600 text-white font-bold py-2.5 rounded-xl text-sm">Simpan Modal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainApp" class="hidden max-w-4xl mx-auto px-4 pt-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm mb-6">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Pembukuan Agen BRILink</h1>
+                <p class="text-xs text-gray-500">Status Device: <span id="syncStatus" class="text-green-600 font-bold">Terhubung Real-time</span></p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openModalSaldo()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-full border">⚙️ Atur Saldo Awal</button>
+                <span id="displayPin" class="text-xs bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded-full">PIN: -</span>
+                <button onclick="logout()" class="text-xs bg-red-100 text-red-600 hover:bg-red-200 font-bold px-3 py-1.5 rounded-full">Keluar</button>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-emerald-500">
+                <p class="text-xs text-gray-500 font-medium">Cash Toko</p>
+                <p id="cardCash" class="text-lg font-bold text-gray-800 mt-1">Rp 0</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                <p class="text-xs text-gray-500 font-medium">Saldo Digital</p>
+                <p id="cardSaldo" class="text-lg font-bold text-gray-800 mt-1">Rp 0</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500">
+                <p class="text-xs text-gray-500 font-medium">Total Piutang (Hutang)</p>
+                <p id="cardHutang" class="text-lg font-bold text-gray-800 mt-1">Rp 0</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-500">
+                <p class="text-xs text-gray-500 font-medium">Profit Kumulatif</p>
+                <p id="cardProfit" class="text-lg font-bold text-emerald-600 mt-1">Rp 0</p>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm mb-6">
+            <h2 class="text-base font-bold text-gray-800 mb-4">Input Transaksi Baru</h2>
+            
+            <!-- Payment Mode -->
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <button type="button" onclick="setMode('Tunai')" id="btnTunai" class="py-2.5 rounded-xl border-2 font-bold text-sm border-blue-600 bg-blue-50 text-blue-600">💵 Tunai</button>
+                <button type="button" onclick="setMode('Non-Tunai')" id="btnNonTunai" class="py-2.5 rounded-xl border-2 font-bold text-sm border-gray-200 text-gray-600">💳 Non-Tunai</button>
+                <button type="button" onclick="setMode('HUTANG')" id="btnHutang" class="py-2.5 rounded-xl border-2 font-bold text-sm border-gray-200 text-gray-600">⏳ HUTANG</button>
+            </div>
+
+            <!-- Inputs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Jenis Transaksi</label>
+                    <select id="selectTx" onchange="calculateFee()" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+                        <option value="Sesama BRI">Transfer / Tarik Sesama BRI</option>
+                        <option value="Bank Lain">Transfer / Tarik Bank Lain</option>
+                        <option value="DANA & e-Wallet">Topup DANA & e-Wallet</option>
+                        <option value="PLN & Pulsa">PLN / Pulsa / BPJS / Pajak</option>
+                        <option value="Paket PKH">Pencairan Paket PKH</option>
+                        <option value="Pelunasan Hutang">Pelunasan Hutang</option>
+                        <option value="Isi Cash Kasir (Tarik ATM)">Isi Cash Kasir (Tarik ATM)</option>
+                        <option value="Setor Saldo (Setor CRM)">Setor Saldo (Setor CRM)</option>
+                        <option value="Tarik Profit">Tarik Profit (Ambil Untung)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nominal (Rp)</label>
+                    <input type="number" id="inputNominal" oninput="calculateFee()" placeholder="0" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+            </div>
+
+            <!-- Calculation Output -->
+            <div class="bg-gray-50 p-4 rounded-xl mb-4 text-xs space-y-1">
+                <div class="flex justify-between text-gray-600">
+                    <span>Biaya Admin Dikenakan:</span>
+                    <span id="calcAdmin" class="font-bold text-gray-800">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span>Estimasi Profit Bersih:</span>
+                    <span id="calcProfit" class="font-bold text-emerald-600">Rp 0</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal</label>
+                    <input type="date" id="inputTanggal" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Keterangan / Nama Penghutang</label>
+                    <input type="text" id="inputKet" placeholder="e.g. Cicilan Mas Budi" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+            </div>
+
+            <button onclick="saveTransaction()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition">💾 Simpan Transaksi</button>
+        </div>
+
+        <!-- History & Tools -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-base font-bold text-gray-800">Riwayat Transaksi</h2>
+                <button onclick="tutupBukuBulanan()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-2 rounded-lg">📅 Tutup Buku Bulanan</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 border-b">
+                            <th class="p-3">Mode</th>
+                            <th class="p-3">Transaksi</th>
+                            <th class="p-3">Nominal</th>
+                            <th class="p-3">Admin</th>
+                            <th class="p-3">Profit</th>
+                            <th class="p-3">Tanggal / Ket</th>
+                            <th class="p-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="txTableBody">
+                        <!-- Transaksi akan muncul di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE INITIALIZATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmhFRxUAAFHx00aoFryY-mjgGTRI_nFYpt",
+            authDomain: "brilink-2a99c.firebaseapp.com",
+            databaseURL: "https://brilink-2a99c-default-rtdb.firebaseio.com",
+            projectId: "brilink-2a99c",
+            storageBucket: "brilink-2a99c.appspot.com",
+            messagingSenderId: "1088184959846",
+            appId: "1:1088184959846:web:c1sa9efcc3235104r77ea7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentPin = "";
+        let currentMode = "Tunai";
+        let transactions = [];
+        let initialCash = 20000000;
+        let initialSaldo = 20000000;
+
+        document.getElementById('inputTanggal').valueAsDate = new Date();
+
+        function setMode(mode) {
+            currentMode = mode;
+            ['Tunai', 'Non-Tunai', 'HUTANG'].forEach(m => {
+                const btn = document.getElementById('btn' + m.replace('-', ''));
+                if (m === mode) {
+                    btn.className = "py-2.5 rounded-xl border-2 font-bold text-sm border-blue-600 bg-blue-50 text-blue-600";
+                } else {
+                    btn.className = "py-2.5 rounded-xl border-2 font-bold text-sm border-gray-200 text-gray-600";
+                }
+            });
+        }
+
+        function calculateFee() {
+            const tx = document.getElementById('selectTx').value;
+            const nominal = parseFloat(document.getElementById('inputNominal').value) || 0;
+            let admin = 0;
+            let profit = 0;
+
+            if (tx === "Sesama BRI") {
+                if (nominal <= 1000000) admin = 3000;
+                else if (nominal <= 3000000) admin = 5000;
+                else admin = 10000;
+                profit = admin;
+            } else if (tx === "Bank Lain") {
+                admin = 10000;
+                profit = 10000 - 6500;
+            } else if (tx === "DANA & e-Wallet" || tx === "PLN & Pulsa") {
+                admin = 3000;
+                profit = 3000;
+            } else if (tx === "Paket PKH") {
+                const tier = Math.ceil(nominal / 600000) || 1;
+                admin = tier * 5000;
+                profit = admin;
+            }
+
+            document.getElementById('calcAdmin').innerText = "Rp " + admin.toLocaleString('id-ID');
+            document.getElementById('calcProfit').innerText = "Rp " + profit.toLocaleString('id-ID');
+            return { admin, profit };
+        }
+
+        function loginWithPin() {
+            const pin = document.getElementById('inputPin').value.trim();
+            if (!pin) return alert("Masukkan PIN!");
+            
+            currentPin = pin;
+            document.getElementById('displayPin').innerText = "PIN: " + pin;
+            document.getElementById('pinScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            db.ref('stores/' + currentPin).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    transactions = data.transactions ? Object.values(data.transactions) : [];
+                    initialCash = data.initialCash !== undefined ? data.initialCash : 20000000;
+                    initialSaldo = data.initialSaldo !== undefined ? data.initialSaldo : 20000000;
+                } else {
+                    transactions = [];
+                    initialCash = 20000000;
+                    initialSaldo = 20000000;
+                }
+                updateUI();
+            });
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        function openModalSaldo() {
+            document.getElementById('setInitialCash').value = initialCash;
+            document.getElementById('setInitialSaldo').value = initialSaldo;
+            document.getElementById('modalSaldo').classList.remove('hidden');
+        }
+
+        function closeModalSaldo() {
+            document.getElementById('modalSaldo').classList.add('hidden');
+        }
+
+        function saveInitialBalances() {
+            const cashVal = parseFloat(document.getElementById('setInitialCash').value) || 0;
+            const saldoVal = parseFloat(document.getElementById('setInitialSaldo').value) || 0;
+
+            db.ref('stores/' + currentPin + '/initialCash').set(cashVal);
+            db.ref('stores/' + currentPin + '/initialSaldo').set(saldoVal);
+            closeModalSaldo();
+        }
+
+        function saveTransaction() {
+            const tx = document.getElementById('selectTx').value;
+            const nominal = parseFloat(document.getElementById('inputNominal').value) || 0;
+            const ket = document.getElementById('inputKet').value.trim();
+            const tanggal = document.getElementById('inputTanggal').value;
+
+            if (nominal <= 0 && !tx.includes("Tutup")) return alert("Masukkan nominal yang valid!");
+
+            const { admin, profit } = calculateFee();
+            const newTx = {
+                id: Date.now(),
+                mode: currentMode,
+                tx,
+                nominal,
+                admin,
+                profit,
+                ket,
+                tanggal
+            };
+
+            db.ref('stores/' + currentPin + '/transactions/' + newTx.id).set(newTx);
+
+            document.getElementById('inputNominal').value = "";
+            document.getElementById('inputKet').value = "";
+            calculateFee();
+        }
+
+        function deleteTx(id) {
+            if (confirm("Hapus transaksi ini?")) {
+                db.ref('stores/' + currentPin + '/transactions/' + id).remove();
+            }
+        }
+
+        function tutupBukuBulanan() {
+            if (confirm("Lakukan Tutup Buku Bulanan? Saldo akhir bulan ini akan dijadikan Saldo Awal bulan baru, dan riwayat akan diarsip.")) {
+                let currentCash = initialCash;
+                let currentSaldo = initialSaldo;
+
+                transactions.forEach(t => {
+                    if (t.tx === "Pelunasan Hutang") {
+                        if (t.mode === "Tunai") currentCash += t.nominal;
+                        else if (t.mode === "Non-Tunai") currentSaldo += t.nominal;
+                    } else if (t.tx === "Isi Cash Kasir (Tarik ATM)") {
+                        currentCash += t.nominal; currentSaldo -= t.nominal;
+                    } else if (t.tx === "Setor Saldo (Setor CRM)") {
+                        currentCash -= t.nominal; currentSaldo += t.nominal;
+                    } else if (t.tx === "Tarik Profit") {
+                        if (t.mode === "Tunai") currentCash -= t.nominal;
+                        else currentSaldo -= t.nominal;
+                    } else if (t.mode === "Tunai") {
+                        currentCash += (t.nominal + t.admin);
+                    } else if (t.mode === "Non-Tunai") {
+                        currentSaldo += (t.nominal + t.admin);
+                    } else if (t.mode === "HUTANG") {
+                        currentSaldo -= t.nominal;
+                    }
+                });
+
+                db.ref('stores/' + currentPin).set({
+                    initialCash: currentCash,
+                    initialSaldo: currentSaldo,
+                    transactions: {}
+                });
+            }
+        }
+
+        function updateUI() {
+            let cash = initialCash;
+            let saldo = initialSaldo;
+            let hutang = 0;
+            let profitTotal = 0;
+
+            const tbody = document.getElementById('txTableBody');
+            tbody.innerHTML = "";
+
+            transactions.sort((a, b) => b.id - a.id).forEach(t => {
+                profitTotal += t.profit;
+                if (t.tx === "Pelunasan Hutang") {
+                    hutang -= t.nominal;
+                    if (t.mode === "Tunai") cash += t.nominal;
+                    else if (t.mode === "Non-Tunai") saldo += t.nominal;
+                } else if (t.tx === "Isi Cash Kasir (Tarik ATM)") {
+                    cash += t.nominal; saldo -= t.nominal;
+                } else if (t.tx === "Setor Saldo (Setor CRM)") {
+                    cash -= t.nominal; saldo += t.nominal;
+                } else if (t.tx === "Tarik Profit") {
+                    if (t.mode === "Tunai") cash -= t.nominal;
+                    else saldo -= t.nominal;
+                } else {
+                    if (t.mode === "Tunai") cash += (t.nominal + t.admin);
+                    else if (t.mode === "Non-Tunai") saldo += (t.nominal + t.admin);
+                    else if (t.mode === "HUTANG") {
+                        saldo -= t.nominal;
+                        hutang += (t.nominal + t.admin);
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold ${t.mode === 'HUTANG' ? 'text-amber-600' : 'text-gray-700'}">${t.mode}</td>
+                    <td class="p-3">${t.tx}</td>
+                    <td class="p-3 font-semibold">Rp ${t.nominal.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-gray-500">Rp ${t.admin.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-emerald-600 font-semibold">Rp ${t.profit.toLocaleString('id-ID')}</td>
+                    <td class="p-3 text-gray-500">${t.tanggal || ''} <br><span class="text-gray-800 font-medium">${t.ket || ''}</span></td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteTx(${t.id})" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('cardCash').innerText = "Rp " + cash.toLocaleString('id-ID');
+            document.getElementById('cardSaldo').innerText = "Rp " + saldo.toLocaleString('id-ID');
+            document.getElementById('cardHutang').innerText = "Rp " + hutang.toLocaleString('id-ID');
+            document.getElementById('cardProfit').innerText = "Rp " + profitTotal.toLocaleString('id-ID');
+        }
+    </script>
+</body>
+</html>
