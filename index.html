@@ -160,24 +160,34 @@
                         </div>
                     </div>
 
-                    <!-- Jenis Transaksi -->
+                    <!-- Jenis Transaksi Ditambah PLN Tagihan (EDC) -->
                     <div class="mb-4">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jenis Transaksi</label>
                         <select id="selectJenis" onchange="calculateFee()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none p-3 font-medium">
-                            <optgroup label="BRI (EDC)">
-                                <option value="Tarik Tunai BRI">Tarik Tunai BRI</option>
-                                <option value="Transfer BRI">Transfer BRI</option>
-                                <option value="Tagihan BRI">Tagihan BRI</option>
+                            <optgroup label="BRI (Mesin EDC)">
+                                <option value="Tarik Tunai BRI (EDC)">Tarik Tunai BRI (EDC)</option>
+                                <option value="Transfer BRI (EDC)">Transfer BRI (EDC)</option>
+                                <option value="Tagihan BRI (EDC)">Tagihan BRI (EDC)</option>
                             </optgroup>
-                            <optgroup label="Bank Lain (EDC)">
-                                <option value="Tarik Tunai Bank Lain">Tarik Tunai Bank Lain</option>
-                                <option value="Transfer Bank Lain">Transfer Bank Lain</option>
+                            <optgroup label="BRI (Non-EDC / App Direct)">
+                                <option value="Tarik Tunai BRI (Non-EDC / App)">Tarik Tunai BRI (Non-EDC / App)</option>
+                                <option value="Transfer BRI (Non-EDC / App)">Transfer BRI (Non-EDC / App)</option>
+                                <option value="Tagihan BRI (Non-EDC / App)">Tagihan BRI (Non-EDC / App)</option>
+                            </optgroup>
+                            <optgroup label="Bank Lain (Mesin EDC)">
+                                <option value="Tarik Tunai Bank Lain (EDC)">Tarik Tunai Bank Lain (EDC)</option>
+                                <option value="Transfer Bank Lain (EDC)">Transfer Bank Lain (EDC)</option>
+                            </optgroup>
+                            <optgroup label="Bank Lain (Non-EDC / App Direct)">
+                                <option value="Tarik Tunai Bank Lain (Non-EDC / App)">Tarik Tunai Bank Lain (Non-EDC / App)</option>
+                                <option value="Transfer Bank Lain (Non-EDC / App)">Transfer Bank Lain (Non-EDC / App)</option>
                             </optgroup>
                             <optgroup label="Bansos & e-Wallet">
                                 <option value="PKH">PKH</option>
                                 <option value="DANA & e-Wallet">DANA & e-Wallet</option>
                                 <option value="PLN Token">PLN Token</option>
-                                <option value="PLN Tagihan">PLN Tagihan</option>
+                                <option value="PLN Tagihan (Non-EDC / App)">PLN Tagihan (Non-EDC / App)</option>
+                                <option value="PLN Tagihan (EDC)">PLN Tagihan (EDC)</option>
                                 <option value="Pulsa">Pulsa</option>
                                 <option value="Paket Data">Paket Data</option>
                                 <option value="Pajak Kendaraan">Pajak Kendaraan</option>
@@ -269,14 +279,19 @@
                             <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Filter Jenis Transaksi</label>
                             <select id="filterJenis" onchange="updateUI()" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-xs rounded-xl p-2.5 font-medium">
                                 <option value="Semua">Semua Jenis Transaksi</option>
-                                <option value="Tarik Tunai BRI">Tarik Tunai BRI</option>
-                                <option value="Transfer BRI">Transfer BRI</option>
-                                <option value="Tarik Tunai Bank Lain">Tarik Tunai Bank Lain</option>
-                                <option value="Transfer Bank Lain">Transfer Bank Lain</option>
+                                <option value="Tarik Tunai BRI (EDC)">Tarik Tunai BRI (EDC)</option>
+                                <option value="Transfer BRI (EDC)">Transfer BRI (EDC)</option>
+                                <option value="Tarik Tunai BRI (Non-EDC / App)">Tarik Tunai BRI (Non-EDC / App)</option>
+                                <option value="Transfer BRI (Non-EDC / App)">Transfer BRI (Non-EDC / App)</option>
+                                <option value="Tarik Tunai Bank Lain (EDC)">Tarik Tunai Bank Lain (EDC)</option>
+                                <option value="Transfer Bank Lain (EDC)">Transfer Bank Lain (EDC)</option>
+                                <option value="Tarik Tunai Bank Lain (Non-EDC / App)">Tarik Tunai Bank Lain (Non-EDC / App)</option>
+                                <option value="Transfer Bank Lain (Non-EDC / App)">Transfer Bank Lain (Non-EDC / App)</option>
                                 <option value="PKH">PKH</option>
                                 <option value="DANA & e-Wallet">DANA & e-Wallet</option>
                                 <option value="PLN Token">PLN Token</option>
-                                <option value="PLN Tagihan">PLN Tagihan</option>
+                                <option value="PLN Tagihan (Non-EDC / App)">PLN Tagihan (Non-EDC / App)</option>
+                                <option value="PLN Tagihan (EDC)">PLN Tagihan (EDC)</option>
                                 <option value="Pulsa">Pulsa</option>
                                 <option value="Paket Data">Paket Data</option>
                                 <option value="Pelunasan Hutang">Pelunasan Hutang</option>
@@ -337,9 +352,9 @@
                 <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">⚙️ Pengaturan Tarif Admin Default Per Tier Nominal</h4>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400">Sesuaikan tarif admin otomatis sesuai rentang nominal transaksi:</p>
 
-                <!-- Section 1: BRI -->
+                <!-- Section 1: BRI EDC -->
                 <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
-                    <h5 class="font-bold text-xs text-blue-700 dark:text-blue-400">1. Transaksi BRI (EDC / App)</h5>
+                    <h5 class="font-bold text-xs text-blue-700 dark:text-blue-400">1. Transaksi BRI (Mesin EDC - Potongan System Rp 4.000)</h5>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                         <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="bri_100k" class="w-full border p-1 rounded"></div>
                         <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="bri_500k" class="w-full border p-1 rounded"></div>
@@ -354,9 +369,9 @@
                     </div>
                 </div>
 
-                <!-- Section 2: Bank Lain -->
+                <!-- Section 2: Bank Lain EDC -->
                 <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
-                    <h5 class="font-bold text-xs text-amber-700 dark:text-amber-400">2. Transaksi Bank Lain (EDC / App)</h5>
+                    <h5 class="font-bold text-xs text-amber-700 dark:text-amber-400">2. Transaksi Bank Lain (Mesin EDC - Potongan System Rp 6.500)</h5>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                         <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="other_100k" class="w-full border p-1 rounded"></div>
                         <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="other_500k" class="w-full border p-1 rounded"></div>
@@ -371,9 +386,26 @@
                     </div>
                 </div>
 
-                <!-- Section 3: e-Wallet -->
+                <!-- Section 3: Bank Lain Non-EDC / App Direct -->
                 <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
-                    <h5 class="font-bold text-xs text-emerald-700 dark:text-emerald-400">3. DANA & e-Wallet</h5>
+                    <h5 class="font-bold text-xs text-purple-700 dark:text-purple-400">3. Transaksi Bank Lain (Non-EDC / App Direct - Profit 100%)</h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                        <div><span class="text-[10px]"><= 100rb:</span><input type="number" id="other_app_100k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">100rb - 500rb:</span><input type="number" id="other_app_500k" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">500rb - 1jt:</span><input type="number" id="other_app_1m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">1jt - 2jt:</span><input type="number" id="other_app_2m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">2jt - 3jt:</span><input type="number" id="other_app_3m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">3jt - 5jt:</span><input type="number" id="other_app_5m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">5jt - 10jt:</span><input type="number" id="other_app_10m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">10jt - 15jt:</span><input type="number" id="other_app_15m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">15jt - 20jt:</span><input type="number" id="other_app_20m" class="w-full border p-1 rounded"></div>
+                        <div><span class="text-[10px]">20jt - 25jt:</span><input type="number" id="other_app_25m" class="w-full border p-1 rounded"></div>
+                    </div>
+                </div>
+
+                <!-- Section 4: e-Wallet -->
+                <div class="border rounded-xl p-3 bg-slate-50 dark:bg-slate-700/50 space-y-2">
+                    <h5 class="font-bold text-xs text-emerald-700 dark:text-emerald-400">4. DANA & e-Wallet</h5>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                         <div><span class="text-[10px]"><= 10rb:</span><input type="number" id="ewallet_10k" class="w-full border p-1 rounded"></div>
                         <div><span class="text-[10px]">10rb - 50rb:</span><input type="number" id="ewallet_50k" class="w-full border p-1 rounded"></div>
@@ -440,6 +472,7 @@
         let customRates = {
             bri: { 100:4000, 500:5000, 1000:6000, 2000:8000, 3000:10000, 5000:15000, 10000:25000, 15000:35000, 20000:40000, 25000:50000 },
             other: { 100:6500, 500:8000, 1000:10000, 2000:12000, 3000:15000, 5000:20000, 10000:30000, 15000:40000, 20000:50000, 25000:60000 },
+            otherApp: { 100:5000, 500:7000, 1000:8000, 2000:10000, 3000:12000, 5000:18000, 10000:25000, 15000:35000, 20000:45000, 25000:55000 },
             ewallet: { 10:1000, 50:2000, 100:3000, 500:4000, 1000:5000, 2000:7000, 3000:10000, 5000:15000 }
         };
 
@@ -473,7 +506,7 @@
             calculateFee(false);
         }
 
-        // CALCULATION ENGINE
+        // CALCULATION ENGINE WITH EDC VS NON-EDC & PLN EDC DISTINCTION
         function calculateFee(isManualAdmin = false) {
             const jenis = document.getElementById('selectJenis').value;
             const nom = rawNominalValue;
@@ -481,7 +514,7 @@
             let systemCost = 0;
 
             if (nom > 0) {
-                if (["Tarik Tunai BRI", "Transfer BRI", "Tagihan BRI"].includes(jenis)) {
+                if (jenis.includes("BRI (EDC)")) {
                     systemCost = 4000;
                     const r = customRates.bri;
                     if (nom <= 100000) admin = r[100];
@@ -494,9 +527,35 @@
                     else if (nom <= 15000000) admin = r[15000];
                     else if (nom <= 20000000) admin = r[20000];
                     else admin = r[25000];
-                } else if (["Tarik Tunai Bank Lain", "Transfer Bank Lain"].includes(jenis)) {
+                } else if (jenis.includes("BRI (Non-EDC / App)")) {
+                    systemCost = 0;
+                    const r = customRates.bri;
+                    if (nom <= 100000) admin = r[100];
+                    else if (nom <= 500000) admin = r[500];
+                    else if (nom <= 1000000) admin = r[1000];
+                    else if (nom <= 2000000) admin = r[2000];
+                    else if (nom <= 3000000) admin = r[3000];
+                    else if (nom <= 5000000) admin = r[5000];
+                    else if (nom <= 10000000) admin = r[10000];
+                    else if (nom <= 15000000) admin = r[15000];
+                    else if (nom <= 20000000) admin = r[20000];
+                    else admin = r[25000];
+                } else if (jenis.includes("Bank Lain (EDC)")) {
                     systemCost = 6500;
                     const r = customRates.other;
+                    if (nom <= 100000) admin = r[100];
+                    else if (nom <= 500000) admin = r[500];
+                    else if (nom <= 1000000) admin = r[1000];
+                    else if (nom <= 2000000) admin = r[2000];
+                    else if (nom <= 3000000) admin = r[3000];
+                    else if (nom <= 5000000) admin = r[5000];
+                    else if (nom <= 10000000) admin = r[10000];
+                    else if (nom <= 15000000) admin = r[15000];
+                    else if (nom <= 20000000) admin = r[20000];
+                    else admin = r[25000];
+                } else if (jenis.includes("Bank Lain (Non-EDC / App)")) {
+                    systemCost = 0;
+                    const r = customRates.otherApp || customRates.other;
                     if (nom <= 100000) admin = r[100];
                     else if (nom <= 500000) admin = r[500];
                     else if (nom <= 1000000) admin = r[1000];
@@ -525,7 +584,13 @@
                     else if (nom <= 2000000) admin = r[2000];
                     else if (nom <= 3000000) admin = r[3000];
                     else admin = r[5000];
-                } else if (["Pulsa", "Paket Data", "PLN Token", "PLN Tagihan"].includes(jenis)) {
+                } else if (jenis === "PLN Tagihan (EDC)") {
+                    systemCost = 3000; // Biaya Admin EDC Mesin
+                    if (nom <= 100000) admin = 4000;
+                    else if (nom <= 500000) admin = 5000;
+                    else if (nom <= 1000000) admin = 6000;
+                    else admin = 8000;
+                } else if (["Pulsa", "Paket Data", "PLN Token", "PLN Tagihan (Non-EDC / App)"].includes(jenis)) {
                     systemCost = 0;
                     admin = 3000;
                 } else if (jenis === "Pajak Kendaraan") {
@@ -544,16 +609,15 @@
 
             const profit = Math.max(0, admin - systemCost);
             
-            // Total tunai serah/terima
             let totalHand = 0;
             if (currentMode === 'Tunai') {
                 if (jenis.startsWith('Tarik') || jenis === 'PKH') {
-                    totalHand = nom; // Fisik keluar
+                    totalHand = nom;
                 } else {
-                    totalHand = nom + admin; // Fisik masuk dari pelanggan
+                    totalHand = nom + admin;
                 }
             } else {
-                totalHand = nom; // Nilai transaksi non-tunai
+                totalHand = nom;
             }
 
             document.getElementById('calcProfit').innerText = "Rp " + profit.toLocaleString('id-ID');
@@ -614,6 +678,18 @@
             document.getElementById('other_20m').value = customRates.other[20000];
             document.getElementById('other_25m').value = customRates.other[25000];
 
+            const rApp = customRates.otherApp || { 100:5000, 500:7000, 1000:8000, 2000:10000, 3000:12000, 5000:18000, 10000:25000, 15000:35000, 20000:45000, 25000:55000 };
+            document.getElementById('other_app_100k').value = rApp[100];
+            document.getElementById('other_app_500k').value = rApp[500];
+            document.getElementById('other_app_1m').value = rApp[1000];
+            document.getElementById('other_app_2m').value = rApp[2000];
+            document.getElementById('other_app_3m').value = rApp[3000];
+            document.getElementById('other_app_5m').value = rApp[5000];
+            document.getElementById('other_app_10m').value = rApp[10000];
+            document.getElementById('other_app_15m').value = rApp[15000];
+            document.getElementById('other_app_20m').value = rApp[20000];
+            document.getElementById('other_app_25m').value = rApp[25000];
+
             document.getElementById('ewallet_10k').value = customRates.ewallet[10];
             document.getElementById('ewallet_50k').value = customRates.ewallet[50];
             document.getElementById('ewallet_100k').value = customRates.ewallet[100];
@@ -661,6 +737,18 @@
                     15000: parseFloat(document.getElementById('other_15m').value)||40000,
                     20000: parseFloat(document.getElementById('other_20m').value)||50000,
                     25000: parseFloat(document.getElementById('other_25m').value)||60000
+                },
+                otherApp: {
+                    100: parseFloat(document.getElementById('other_app_100k').value)||5000,
+                    500: parseFloat(document.getElementById('other_app_500k').value)||7000,
+                    1000: parseFloat(document.getElementById('other_app_1m').value)||8000,
+                    2000: parseFloat(document.getElementById('other_app_2m').value)||10000,
+                    3000: parseFloat(document.getElementById('other_app_3m').value)||12000,
+                    5000: parseFloat(document.getElementById('other_app_5m').value)||18000,
+                    10000: parseFloat(document.getElementById('other_app_10m').value)||25000,
+                    15000: parseFloat(document.getElementById('other_app_15m').value)||35000,
+                    20000: parseFloat(document.getElementById('other_app_20m').value)||45000,
+                    25000: parseFloat(document.getElementById('other_app_25m').value)||55000
                 },
                 ewallet: {
                     10: parseFloat(document.getElementById('ewallet_10k').value)||1000,
@@ -809,7 +897,6 @@
             }
         }
 
-        // FULL FIXED MUTATION ENGINE (PERBAIKAN LOGIKA DANA & TARIK TUNAI NON-TUNAI)
         function updateUI() {
             let currentCash = initialCash;
             let currentSaldo = initialSaldo;
@@ -844,10 +931,8 @@
                         }
                     } else if (t.mode === "Non-Tunai") {
                         if (isTarik) {
-                            // Tarik Tunai via Transfer/Non-Tunai: Cash laci TETAP, Saldo digital bertambah Nominal + Profit
                             currentSaldo += (t.nominal + t.profit);
                         } else {
-                            // DANA / Transfer / PPOB Non-Tunai: Cash laci TETAP, Saldo digital bertambah Profit Bersih (Masuk transferan admin - keluar modal)
                             currentSaldo += t.profit;
                         }
                     } else if (t.mode === "HUTANG") {
@@ -867,7 +952,6 @@
             document.getElementById('cardMonthlyProfit').innerText = "Rp " + monthlyProfit.toLocaleString('id-ID');
             document.getElementById('cardTotalProfit').innerText = "Total kumulatif: Rp " + totalProfit.toLocaleString('id-ID');
 
-            // Apply Filters for History Table
             const filterM = document.getElementById('filterMode') ? document.getElementById('filterMode').value : 'Semua';
             const filterJ = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : 'Semua';
 
