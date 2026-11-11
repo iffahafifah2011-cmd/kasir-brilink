@@ -1,26 +1,23 @@
-BRILink Smart Kasir V2 - Modern Fintech UI
+BRILink Smart Kasir V2 - Update Tombol Lunasi Penuh
 
-Isi paket:
-- index.html: aplikasi dengan tampilan Light/Dark modern fintech.
-- assets/: lima logo sumber saldo yang diberikan pengguna.
-- manifest.json, sw.js, icons/: dukungan instalasi PWA.
+ISI UPDATE:
+- Menambahkan tombol "Lunasi penuh" pada setiap rincian piutang yang masih memiliki sisa.
+- Tombol mencatat pelunasan sebesar seluruh sisa piutang secara langsung.
+- Sumber penerimaan dan tanggal mengikuti pilihan pada formulir "Catat pelunasan berdasarkan ID piutang".
+- Input nominal pembayaran pada formulir tetap tersedia untuk pembayaran sebagian.
+- Pembayaran masuk ke saldo Cash/digital sesuai sumber yang dipilih dan tercatat pada riwayat pelunasan.
+- Cache service worker diperbarui agar browser mengambil versi aplikasi terbaru.
 
-Cara pasang GitHub Pages:
+PEMASANGAN:
 1. Ekstrak ZIP.
-2. Upload/replace index.html, manifest.json, sw.js, folder assets, dan folder icons ke folder utama repository GitHub Pages.
-3. Commit changes.
-4. Buka ulang website. Jika tampilan lama masih muncul, lakukan hard refresh (Ctrl+Shift+R) atau tutup-buka aplikasi.
+2. Upload seluruh isi folder brilink-smart-kasir-modern ke root repository GitHub Pages.
+3. Replace file lama jika diminta.
+4. Commit perubahan.
+5. Refresh aplikasi dengan Ctrl + Shift + R.
 
-Catatan:
-- Integrasi Firebase dan alur transaksi dari file sumber dipertahankan.
-- Tema tersimpan di perangkat masing-masing (Light/Dark).
-- Dropdown sumber saldo dan jenis transaksi pada form Catat Transaksi menggunakan logo/ikon.
-- CDN Tailwind, Firebase, dan Lucide memerlukan koneksi internet.
-- Backup data sebelum mengganti file di repository.
+CATATAN:
+- Firebase dan struktur data lama tetap digunakan.
+- Tombol Lunasi penuh menggunakan sumber dan tanggal yang dipilih pada formulir pelunasan.
+- Untuk pembayaran sebagian, tetap gunakan kolom Nominal pembayaran dan tombol Simpan pelunasan.
 
-CATATAN PERBAIKAN TRANSFER INTERNAL
-- Transfer baru: saldo sumber berkurang sebesar nominal + biaya; saldo tujuan bertambah sebesar nominal.
-- Biaya transfer mengurangi saldo sumber dan tetap dihitung sebagai biaya pada ringkasan profit.
-- Transfer lama (tanpa ledgerVersion 2) tetap memakai rumus lama hanya saat dampaknya dibalik ketika diedit/dihapus, agar saldo tidak salah dibalik.
-- Saat transfer lama diedit, dampak lama dibalik, lalu data baru diterapkan memakai logika yang benar.
-- Saldo historis tidak dikoreksi otomatis. Rekonsiliasikan saldo aktual terlebih dahulu; jangan melakukan koreksi massal tanpa backup.
+Update layout Saldo & Cash: pada layar lebar, kartu Cash berdasarkan pecahan kini sejajar dengan kartu Saldo Digital dan memiliki lebar yang sama. Pada layar kecil, kedua kartu tersusun vertikal agar tetap nyaman digunakan.

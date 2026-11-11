@@ -9,22 +9,6 @@
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <title>BRILink Smart Kasir V2</title>
 
-<div id="editModalOverlay" aria-hidden="true">
-  <section id="editModalDialog" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
-      <h2 id="editModalTitle" style="font-size:20px;font-weight:800;margin:0">Edit data</h2>
-      <button type="button" class="edit-btn edit-btn-cancel" onclick="closeEditModal()" aria-label="Tutup">✕</button>
-    </div>
-    <p id="editModalSubtitle" class="muted" style="font-size:13px;margin:0 0 16px">Periksa perubahan sebelum menyimpan.</p>
-    <form id="editModalForm">
-      <div id="editModalFields" class="edit-modal-grid"></div>
-      <div class="edit-modal-actions">
-        <button type="button" class="edit-btn edit-btn-cancel" onclick="closeEditModal()">Batal</button>
-        <button type="submit" id="editModalSave" class="edit-btn edit-btn-save">Simpan perubahan</button>
-      </div>
-    </form>
-  </section>
-</div>
 
 <script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={darkMode:'class'}</script><script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -91,11 +75,28 @@ button{transition:filter .16s,transform .16s}button:hover{filter:brightness(.97)
 
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen">
+<div id="editModalOverlay" aria-hidden="true">
+  <section id="editModalDialog" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
+      <h2 id="editModalTitle" style="font-size:20px;font-weight:800;margin:0">Edit data</h2>
+      <button type="button" class="edit-btn edit-btn-cancel" onclick="closeEditModal()" aria-label="Tutup">✕</button>
+    </div>
+    <p id="editModalSubtitle" class="muted" style="font-size:13px;margin:0 0 16px">Periksa perubahan sebelum menyimpan.</p>
+    <form id="editModalForm">
+      <div id="editModalFields" class="edit-modal-grid"></div>
+      <div class="edit-modal-actions">
+        <button type="button" class="edit-btn edit-btn-cancel" onclick="closeEditModal()">Batal</button>
+        <button type="submit" id="editModalSave" class="edit-btn edit-btn-save">Simpan perubahan</button>
+      </div>
+    </form>
+  </section>
+</div>
+
 <div id="login" class="min-h-screen flex items-center justify-center p-4"><div class="card w-full max-w-sm text-center"><div class="text-3xl mb-2">🏦</div><h1 class="text-2xl font-bold">BRILink Smart Kasir V2</h1><p class="muted text-sm mb-5">Masuk ke ruang data percobaan V2</p><input id="pin" type="password" placeholder="PIN toko" class="w-full border rounded-xl p-3 mb-3 dark:bg-slate-800 dark:border-slate-600"><button onclick="loginApp()" class="w-full bg-blue-700 text-white rounded-xl p-3 font-bold">Masuk</button><p class="text-xs muted mt-3">V2 menyimpan data terpisah dari versi lama.</p></div></div>
 <div id="app" class="hidden">
 <header class="bg-gradient-to-r from-blue-950 to-blue-700 text-white p-4"><div class="max-w-7xl mx-auto flex justify-between items-center gap-3"><div><h1 class="font-bold text-xl">BRILink Smart Kasir <span class="text-xs bg-white/20 px-2 py-1 rounded">V2</span></h1><p class="text-xs text-blue-200">Pusat pencatatan transaksi & saldo lintas platform</p></div><div class="flex gap-2"><button onclick="toggleTheme()" class="bg-white/10 rounded-lg px-3 py-2">🌙</button><button onclick="logout()" class="bg-red-600 rounded-lg px-3 py-2 text-sm">Keluar</button></div></div></header>
 <main class="max-w-7xl mx-auto p-4">
-<nav class="flex gap-2 overflow-x-auto pb-3 mb-4"> <button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="dashboard">Ringkasan</button><button class="tab active rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="transactions">Transaksi</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="wallets">Saldo & Cash</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="debts">Piutang</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="transfers">Mutasi Internal</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="refunds">Refund EDC</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="reconcile">Rekonsiliasi</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="backup">Backup & Restore</button></nav>
+<nav class="flex gap-2 overflow-x-auto pb-3 mb-4"> <button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="dashboard">Ringkasan</button><button class="tab active rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="transactions">Transaksi</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="wallets">Saldo & Cash</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="debts">Piutang</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="transfers">Mutasi Internal</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="refunds">Refund EDC</button><button class="tab rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap" data-tab="backup">Backup & Restore</button></nav>
 <section id="dashboard" class="panel hidden">
 <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4"><div class="card"><p class="muted text-xs">Total aset tercatat</p><p id="assetTotal" class="text-2xl font-black mt-1">Rp0</p></div><div class="card"><p class="muted text-xs">Cash fisik</p><p id="cashTotal" class="text-2xl font-bold mt-1">Rp0</p></div><div class="card"><p class="muted text-xs">Saldo digital</p><p id="digitalTotal" class="text-2xl font-bold mt-1">Rp0</p></div><div class="card"><p class="muted text-xs">Piutang terbuka</p><p id="debtTotal" class="text-2xl font-bold mt-1">Rp0</p></div></div>
 <div class="grid lg:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold mb-3">Saldo per sumber</h2><div id="dashboardWallets" class="space-y-2"></div></div><div class="card"><h2 class="font-bold mb-3">Ringkasan pembukuan</h2><div class="space-y-3 text-sm"><div class="flex justify-between"><span class="muted">Total potongan sistem EDC</span><b id="totalEdcCost">Rp0</b></div><div class="flex justify-between"><span class="muted">Profit transaksi (sebelum refund EDC)</span><b id="profitBeforeRefund">Rp0</b></div><div class="flex justify-between"><span class="muted">Refund EDC diterima</span><b id="refundReceived">Rp0</b></div><div class="flex justify-between"><span class="muted">Biaya EDC bersih</span><b id="netEdcCost">Rp0</b></div><div class="flex justify-between"><span class="muted">Biaya transfer internal</span><b id="transferFeesTotal" class="amount-negative">Rp0</b></div><div class="flex justify-between border-t pt-3 dark:border-slate-700"><span class="muted">Profit setelah refund & biaya transfer</span><b id="profitAfterRefund" class="text-emerald-600">Rp0</b></div></div><p class="text-xs muted mt-4">Refund hanya dihitung setelah nominal benar-benar diterima dan dicatat.</p></div></div>
@@ -105,19 +106,27 @@ button{transition:filter .16s,transform .16s}button:hover{filter:brightness(.97)
   <div><div class="flex items-center gap-2 flex-wrap"><h2 class="font-bold text-lg">Riwayat transaksi</h2><button onclick="clearHistory('transactions')" class="action-delete">Bersihkan semua</button></div><p id="txResultCount" class="muted text-xs mt-1">0 transaksi</p></div>
   <div class="flex flex-wrap gap-2"><button onclick="exportTransactionsExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-2 text-sm font-semibold">📊 Ekspor Excel (CSV)</button><button onclick="exportTransactionsPDF()" class="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-2 text-sm font-semibold">📄 Cetak / PDF</button></div>
 </div>
-<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+<div class="space-y-3 mb-4">
   <div><label class="text-xs muted block mb-1" for="txSearch">Pencarian</label><input id="txSearch" oninput="renderTransactions()" placeholder="ID, nama, nominal, keterangan..." class="field w-full"></div>
-  <div><label class="text-xs muted block mb-1" for="txDatePreset">Periode cepat</label><select id="txDatePreset" class="field w-full" onchange="applyTxDatePreset()"><option value="all">Semua tanggal</option><option value="today">Hari ini</option><option value="yesterday">Kemarin</option><option value="7">7 hari terakhir</option><option value="30">30 hari terakhir</option><option value="month">Bulan ini</option><option value="custom">Rentang tanggal</option></select></div>
-  <div><label class="text-xs muted block mb-1" for="txSort">Urutkan</label><select id="txSort" class="field w-full" onchange="renderTransactions()"><option value="newest">Tanggal terbaru</option><option value="oldest">Tanggal terlama</option><option value="amount-desc">Nominal terbesar</option><option value="amount-asc">Nominal terkecil</option><option value="profit-desc">Profit terbesar</option><option value="profit-asc">Profit terkecil</option></select></div>
-  <div><label class="text-xs muted block mb-1" for="txDateFrom">Dari tanggal</label><input id="txDateFrom" type="date" class="field w-full" onchange="onTxCustomDate()"></div>
-  <div><label class="text-xs muted block mb-1" for="txDateTo">Sampai tanggal</label><input id="txDateTo" type="date" class="field w-full" onchange="onTxCustomDate()"></div>
-  <div><label class="text-xs muted block mb-1" for="txModeFilter">Mode pembayaran</label><select id="txModeFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua mode</option><option value="cash">Tunai</option><option value="account">Non-Tunai</option><option value="debt">Hutang</option><option value="partial">Bayar sebagian</option></select></div>
-  <div><label class="text-xs muted block mb-1" for="txAccountFilter">Platform / sumber saldo</label><select id="txAccountFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua platform</option><option value="BRI">BRI (BRImo/BRILink)</option><option value="JAGO">Bank Jago</option><option value="DANA">DANA</option><option value="SEABANK">SeaBank</option><option value="AMAR">Amar Bank</option><option value="CASH">Cash fisik</option></select></div>
-  <div><label class="text-xs muted block mb-1" for="txTypeFilter">Jenis transaksi</label><select id="txTypeFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua jenis transaksi</option></select></div>
-  <div><label class="text-xs muted block mb-1" for="txDebtFilter">Status piutang</label><select id="txDebtFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua status</option><option value="active">Piutang belum lunas</option><option value="paid">Piutang lunas</option><option value="none">Tanpa piutang</option></select></div>
-  <div><label class="text-xs muted block mb-1" for="txProfitFilter">Hasil transaksi</label><select id="txProfitFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua hasil</option><option value="profit">Untung</option><option value="loss">Rugi</option><option value="zero">Impas</option></select></div>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+    <div><label class="text-xs muted block mb-1" for="txDatePreset">Periode</label><select id="txDatePreset" class="field w-full" onchange="applyTxDatePreset()"><option value="all">Semua tanggal</option><option value="today">Hari ini</option><option value="yesterday">Kemarin</option><option value="7">7 hari terakhir</option><option value="30">30 hari terakhir</option><option value="month">Bulan ini</option><option value="custom">Rentang tanggal</option></select></div>
+    <div><label class="text-xs muted block mb-1" for="txSort">Urutkan</label><select id="txSort" class="field w-full" onchange="renderTransactions()"><option value="newest">Tanggal terbaru</option><option value="oldest">Tanggal terlama</option><option value="amount-desc">Nominal terbesar</option><option value="amount-asc">Nominal terkecil</option><option value="profit-desc">Profit terbesar</option><option value="profit-asc">Profit terkecil</option></select></div>
+    <button type="button" id="txFilterToggle" onclick="toggleTxFilterPanel()" class="field w-full flex items-center justify-center gap-2 font-semibold"><span>☷ Filter lainnya</span><span id="txFilterBadge" class="hidden rounded-full bg-blue-600 text-white text-xs px-2 py-0.5">0</span><span id="txFilterChevron">▾</span></button>
+  </div>
+  <div id="txActiveFilterChips" class="flex flex-wrap gap-1.5"></div>
+  <div id="txAdvancedFilters" class="hidden rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-900/40">
+    <div class="flex items-center justify-between gap-2 mb-3"><div><h3 class="font-bold text-sm">Filter tambahan</h3><p class="muted text-xs">Pilih kriteria untuk menyaring riwayat transaksi.</p></div><button type="button" onclick="resetTxFilters()" class="text-sm text-blue-600 dark:text-blue-300 font-semibold whitespace-nowrap">↺ Reset filter</button></div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div><label class="text-xs muted block mb-1" for="txDateFrom">Dari tanggal</label><input id="txDateFrom" type="date" class="field w-full" onchange="onTxCustomDate()"></div>
+      <div><label class="text-xs muted block mb-1" for="txDateTo">Sampai tanggal</label><input id="txDateTo" type="date" class="field w-full" onchange="onTxCustomDate()"></div>
+      <div><label class="text-xs muted block mb-1" for="txModeFilter">Mode pembayaran</label><select id="txModeFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua mode</option><option value="cash">Tunai</option><option value="account">Non-Tunai</option><option value="debt">Hutang</option><option value="partial">Bayar sebagian</option></select></div>
+      <div><label class="text-xs muted block mb-1" for="txAccountFilter">Platform / sumber saldo</label><select id="txAccountFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua platform</option><option value="BRI">BRI (BRImo/BRILink)</option><option value="JAGO">Bank Jago</option><option value="DANA">DANA</option><option value="SEABANK">SeaBank</option><option value="AMAR">Amar Bank</option><option value="CASH">Cash fisik</option></select></div>
+      <div><label class="text-xs muted block mb-1" for="txTypeFilter">Jenis transaksi</label><select id="txTypeFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua jenis transaksi</option></select></div>
+      <div><label class="text-xs muted block mb-1" for="txDebtFilter">Status piutang</label><select id="txDebtFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua status</option><option value="active">Piutang belum lunas</option><option value="paid">Piutang lunas</option><option value="none">Tanpa piutang</option></select></div>
+      <div><label class="text-xs muted block mb-1" for="txProfitFilter">Hasil transaksi</label><select id="txProfitFilter" class="field w-full" onchange="renderTransactions()"><option value="all">Semua hasil</option><option value="profit">Untung</option><option value="loss">Rugi</option><option value="zero">Impas</option></select></div>
+    </div>
+  </div>
 </div>
-<div class="flex justify-end mb-3"><button onclick="resetTxFilters()" class="text-sm text-blue-600 dark:text-blue-300 font-semibold">↺ Reset filter</button></div>
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-4">
   <div class="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><div class="muted text-xs">Jumlah transaksi</div><b id="txSumCount">0</b></div>
   <div class="rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><div class="muted text-xs">Total nominal</div><b id="txSumAmount">Rp0</b></div>
@@ -128,16 +137,56 @@ button{transition:filter .16s,transform .16s}button:hover{filter:brightness(.97)
 <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left border-b dark:border-slate-700"><th class="p-2">ID / Tanggal</th><th class="p-2">Detail</th><th class="p-2 text-right">Nominal</th><th class="p-2 text-right">Profit</th><th class="p-2 text-center">Aksi</th></tr></thead><tbody id="txRows"></tbody></table></div>
 <p class="muted text-xs mt-3">Ringkasan dan file ekspor mengikuti seluruh filter yang sedang aktif. Pelunasan piutang tidak dihitung sebagai profit transaksi baru.</p>
 </div></div></section>
-<section id="wallets" class="panel hidden"><div class="grid sm:grid-cols-2 gap-3 mb-4"><div class="card"><p class="muted text-xs">Total seluruh saldo digital</p><p id="walletDigitalGrandTotal" class="text-2xl font-black mt-1">Rp0</p></div><div class="card"><p class="muted text-xs">Total cash berdasarkan pecahan</p><p id="walletCashGrandTotal" class="text-2xl font-black mt-1">Rp0</p></div></div><div class="flex justify-end mb-4"><div class="flex flex-wrap gap-2"><button onclick="resetAllBalances()" class="bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-4 py-2 font-semibold">Reset Semua Saldo ke Rp0</button><button onclick="resetEntireApp()" class="bg-red-700 hover:bg-red-800 text-white rounded-lg px-4 py-2 font-semibold">Reset Seluruh Aplikasi</button></div></div><div class="grid lg:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold text-lg mb-3">Saldo digital</h2><div id="walletInputs" class="space-y-3"></div><button onclick="saveOpeningWallets()" class="mt-4 bg-blue-700 text-white rounded-lg px-4 py-2">Simpan saldo awal / koreksi tercatat</button><p class="text-xs muted mt-2">Saldo tersinkronisasi dicatat satu kali: BRI/BRImo/BRILink; Jago termasuk Cadangan dan GoPay; SeaBank termasuk ShopeePay dan Mitra Shopee.</p></div><div class="card"><h2 class="font-bold text-lg mb-3">Cash berdasarkan pecahan</h2><div id="cashInputs" class="grid grid-cols-2 gap-3"></div><p class="text-xs muted mt-3">Total cash ditampilkan pada ringkasan di atas.</p><button onclick="saveCashDenoms()" class="mt-3 bg-blue-700 text-white rounded-lg px-4 py-2">Simpan jumlah pecahan</button></div></div></section>
-<section id="debts" class="panel hidden"><div class="grid lg:grid-cols-3 gap-4"><div class="card"><div class="flex items-center justify-between gap-2 mb-3"><h2 class="font-bold text-lg">Daftar piutang</h2><button onclick="clearHistory('debts')" class="action-delete">Bersihkan semua</button></div><p id="debtSummary" class="text-2xl font-black mb-3">Rp0</p><div id="debtRows" class="space-y-3"></div></div><div class="card lg:col-span-2"><h2 class="font-bold text-lg mb-3">Catat pelunasan berdasarkan ID piutang</h2><form id="payDebtForm" class="space-y-3"><div><label class="text-xs font-semibold">ID Piutang</label><select id="payDebtId" class="field" required></select></div><div class="grid sm:grid-cols-2 gap-3"><div><label class="text-xs font-semibold">Nominal pembayaran</label><input id="payDebtAmount" class="field money-input" type="text" autocomplete="off" required inputmode="numeric"></div><div><label class="text-xs font-semibold">Diterima melalui</label><select id="payDebtSource" class="field"></select></div></div><div><label class="text-xs font-semibold">Tanggal pembayaran</label><input id="payDebtDate" type="date" class="field" required></div><button class="bg-emerald-700 text-white rounded-lg px-4 py-3 font-bold">Simpan pelunasan</button></form><p class="text-xs muted mt-3">Pelunasan menambah sumber saldo penerimaan dan mengurangi piutang; tidak menambah profit transaksi baru.</p></div></div></section>
+<section id="wallets" class="panel hidden"><div class="grid sm:grid-cols-2 gap-3 mb-4"><div class="card"><p class="muted text-xs">Total seluruh saldo digital</p><p id="walletDigitalGrandTotal" class="text-2xl font-black mt-1">Rp0</p></div><div class="card"><p class="muted text-xs">Saldo cash tercatat</p><p id="walletCashGrandTotal" class="text-2xl font-black mt-1">Rp0</p></div></div><div class="flex justify-end mb-4"><div class="flex flex-wrap gap-2"><button onclick="resetAllBalances()" class="bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-4 py-2 font-semibold">Reset Semua Saldo ke Rp0</button><button onclick="resetEntireApp()" class="bg-red-700 hover:bg-red-800 text-white rounded-lg px-4 py-2 font-semibold">Reset Seluruh Aplikasi</button></div></div><div class="grid lg:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold text-lg mb-3">Saldo digital</h2><p class="muted text-sm mb-3">Masukkan saldo yang benar-benar terlihat di aplikasi masing-masing akun. Saldo tercatat dan saldo real akan dibandingkan sebelum dikoreksi.</p><div id="walletInputs" class="space-y-3"></div><div class="flex flex-wrap gap-2 mt-4"><button type="button" onclick="saveDigitalCount()" class="bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-4 py-2 font-semibold">Cek & simpan hasil hitung</button><button type="button" onclick="openDigitalCorrectionForm()" class="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4 py-2 font-semibold">Koreksi saldo mengikuti saldo real</button></div><div id="digitalCorrectionPanel" class="hidden rounded-xl border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/20 p-4 mt-3 space-y-3"><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Koreksi Selisih Saldo Digital</h3><button type="button" onclick="closeDigitalCorrectionForm()" class="text-sm muted">Tutup</button></div><div id="digitalCorrectionSummary" class="space-y-2"></div><div><label for="digitalCorrectionNote" class="text-sm font-semibold">Keterangan (opsional)</label><textarea id="digitalCorrectionNote" class="field mt-1" rows="3" placeholder="Contoh: saldo terpakai, transfer masuk belum dicatat, atau penyesuaian saldo rekening."></textarea></div><p class="text-xs muted">Setelah dikonfirmasi, saldo tercatat pada akun yang diperiksa akan disamakan dengan saldo real. Koreksi tidak memengaruhi laba transaksi.</p><div class="flex flex-wrap gap-2"><button type="button" onclick="confirmDigitalCorrection()" class="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4 py-2 font-semibold">Konfirmasi koreksi</button><button type="button" onclick="closeDigitalCorrectionForm()" class="rounded-lg border px-4 py-2 font-semibold">Batal</button></div></div><p class="text-xs muted mt-2">Saldo tersinkronisasi dicatat satu kali: BRI/BRImo/BRILink; Jago termasuk Cadangan dan GoPay; SeaBank termasuk ShopeePay dan Mitra Shopee.</p><div id="digitalCheckHistory" class="mt-4"></div></div><div class="card">
+  <h2 class="font-bold text-lg mb-2">Cash berdasarkan pecahan</h2>
+  <p class="muted text-sm mb-3">Masukkan uang yang benar-benar ada secara fisik. Kamu bisa mengisi jumlah lembar/keping atau total nominal; kolom lainnya akan terisi otomatis.</p>
+  <div id="cashInputs" class="grid sm:grid-cols-2 gap-3"></div>
+  <div class="rounded-xl bg-slate-100 dark:bg-slate-800 p-3 mt-4 grid sm:grid-cols-3 gap-3">
+    <div><div class="text-xs muted">Cash tercatat aplikasi</div><b id="cashBookCheck" class="text-lg">Rp0</b></div>
+    <div><div class="text-xs muted">Cash real hasil hitung</div><b id="cashRealCheck" class="text-lg">Rp0</b></div>
+    <div><div class="text-xs muted">Selisih</div><b id="cashDiffCheck" class="text-lg">Rp0</b></div>
+  </div>
+  <div class="flex flex-wrap gap-2 mt-3">
+    <button type="button" onclick="saveCashCount()" class="bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-4 py-2 font-semibold">Cek & simpan hasil hitung</button>
+    <button type="button" onclick="openCashCorrectionForm()" class="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4 py-2 font-semibold">Koreksi saldo mengikuti uang real</button>
+  </div>
+  <div id="cashCorrectionPanel" class="hidden rounded-xl border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/20 p-4 mt-3 space-y-3">
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="font-bold">Koreksi Selisih Cash</h3>
+      <button type="button" onclick="closeCashCorrectionForm()" class="text-sm muted">Tutup</button>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div class="rounded-lg bg-white/70 dark:bg-slate-900/60 p-3">
+        <div class="text-xs muted">Selisih yang akan dikoreksi</div>
+        <b id="cashCorrectionAmount" class="text-xl">Rp0</b>
+      </div>
+      <div class="rounded-lg bg-white/70 dark:bg-slate-900/60 p-3">
+        <div class="text-xs muted">Saldo aplikasi setelah koreksi</div>
+        <b id="cashCorrectionTarget" class="text-xl">Rp0</b>
+      </div>
+    </div>
+    <div>
+      <label for="cashCorrectionNote" class="text-sm font-semibold">Keterangan (opsional)</label>
+      <textarea id="cashCorrectionNote" class="field mt-1" rows="3" placeholder="Contoh: uang tambahan dari keluarga, uang terpakai, atau selisih dari transaksi sebelumnya."></textarea>
+    </div>
+    <p class="text-xs muted">Periksa kembali nominal di atas. Setelah dikonfirmasi, saldo cash aplikasi akan disamakan dengan uang real. Koreksi ini tidak memengaruhi laba transaksi.</p>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" onclick="confirmCashCorrection()" class="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4 py-2 font-semibold">Konfirmasi koreksi</button>
+      <button type="button" onclick="closeCashCorrectionForm()" class="rounded-lg border px-4 py-2 font-semibold">Batal</button>
+    </div>
+  </div>
+  <p class="muted text-xs mt-2">Menyimpan hasil hitung tidak mengubah saldo aplikasi. Koreksi hanya dilakukan setelah kamu menekan tombol konfirmasi. Koreksi tidak memengaruhi laba transaksi.</p>
+  <div id="cashCheckHistory" class="mt-4"></div>
+</div></div></section>
+<section id="debts" class="panel hidden"><div class="grid lg:grid-cols-3 gap-4"><div class="card"><div class="flex items-center justify-between gap-2 mb-3"><h2 class="font-bold text-lg">Daftar piutang</h2><button onclick="clearHistory('debts')" class="action-delete">Bersihkan semua</button></div><p id="debtSummary" class="text-2xl font-black mb-3">Rp0</p><div class="grid sm:grid-cols-[1fr_170px] gap-2 mb-3"><input id="debtSearch" class="field" type="search" placeholder="Cari nama orang yang berutang..." autocomplete="off"><select id="debtStatusFilter" class="field"><option value="all">Semua status</option><option value="open">Belum lunas</option><option value="paid">Sudah lunas</option></select></div><p id="debtResultInfo" class="text-xs muted mb-3">Piutang dikelompokkan berdasarkan nama.</p><div id="debtRows" class="space-y-3"></div></div><div class="card lg:col-span-2"><h2 class="font-bold text-lg mb-3">Catat pelunasan berdasarkan ID piutang</h2><form id="payDebtForm" class="space-y-3"><div><label class="text-xs font-semibold">ID Piutang</label><select id="payDebtId" class="field" required></select></div><div class="grid sm:grid-cols-2 gap-3"><div><label class="text-xs font-semibold">Nominal pembayaran</label><input id="payDebtAmount" class="field money-input" type="text" autocomplete="off" required inputmode="numeric"></div><div><label class="text-xs font-semibold">Diterima melalui</label><select id="payDebtSource" class="field"></select></div></div><div><label class="text-xs font-semibold">Tanggal pembayaran</label><input id="payDebtDate" type="date" class="field" required></div><button class="bg-emerald-700 text-white rounded-lg px-4 py-3 font-bold">Simpan pelunasan</button></form><p class="text-xs muted mt-3">Pelunasan menambah sumber saldo penerimaan dan mengurangi piutang; tidak menambah profit transaksi baru.</p></div></div></section>
 <section id="transfers" class="panel hidden"><div class="grid lg:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold text-lg mb-3">Transfer internal antar-sumber</h2><form id="transferForm" class="space-y-3"><div><label class="text-xs font-semibold">Dari sumber</label><select id="transferFrom" class="field"></select></div><div><label class="text-xs font-semibold">Ke sumber</label><select id="transferTo" class="field"></select></div><div><label class="text-xs font-semibold">Nominal transfer</label><input id="transferAmount" type="text" class="field money-input" required inputmode="numeric"></div><div><label class="text-xs font-semibold">Biaya transfer</label><input id="transferFee" type="text" value="0" class="field money-input" inputmode="numeric"></div><div><label class="text-xs font-semibold">Tanggal</label><input id="transferDate" type="date" class="field" required></div><button class="bg-blue-700 text-white rounded-lg px-4 py-3 font-bold">Catat transfer</button></form><p class="text-xs muted mt-3">Transfer internal bukan pendapatan. Biaya transfer mengurangi profit.</p></div><div class="card"><h2 class="font-bold text-lg mb-3">Pengeluaran / penambahan modal</h2><form class="space-y-3" onsubmit="saveCashEvent(event)"><select id="cashEventType" class="field"><option value="expense">Pengeluaran operasional</option><option value="capital">Penambahan modal</option><option value="owner">Pengambilan pribadi / profit</option><option value="adjust">Penyesuaian saldo (wajib alasan)</option></select><select id="cashEventSource" class="field"></select><input id="cashEventAmount" type="text" class="field money-input" placeholder="Nominal" required inputmode="numeric"><input id="cashEventDate" type="date" class="field" required><input id="cashEventNote" class="field" placeholder="Keterangan / alasan wajib" required><button class="bg-slate-800 text-white rounded-lg px-4 py-3 font-bold">Simpan mutasi</button></form></div></div><div class="card mt-4"><div class="flex items-center justify-between gap-2 flex-wrap mb-3"><h2 class="font-bold">Riwayat mutasi non-transaksi</h2><button onclick="clearHistory('mutations')" class="action-delete">Bersihkan semua</button></div><div id="eventRows" class="space-y-2"></div></div></section>
 <section id="refunds" class="panel hidden"><div class="grid lg:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold text-lg mb-3">Catat refund EDC kolektif</h2><form class="space-y-3" onsubmit="saveRefund(event)"><div><label class="text-xs font-semibold">Periode transaksi yang dicakup — bebas</label><div class="grid grid-cols-2 gap-2"><input id="refundStart" type="date" class="field" required><input id="refundEnd" type="date" class="field" required></div></div><div><label class="text-xs font-semibold">Tanggal refund masuk rekening BRI</label><input id="refundDate" type="date" class="field" required></div><div><label class="text-xs font-semibold">Nominal refund aktual diterima</label><input id="refundAmount" type="text" class="field money-input" required inputmode="numeric"></div><input id="refundNote" class="field" placeholder="Catatan (opsional)"><button class="bg-emerald-700 text-white rounded-lg px-4 py-3 font-bold">Simpan refund masuk</button></form><p class="text-xs muted mt-3">Tidak ada estimasi/persentase otomatis. Catat hanya nominal yang benar-benar masuk.</p></div><div class="card"><div class="flex items-center justify-between gap-2 mb-3"><h2 class="font-bold text-lg">Riwayat refund</h2><button onclick="clearHistory('refunds')" class="action-delete">Bersihkan semua</button></div><div id="refundRows" class="space-y-3"></div></div></div></section>
-<section id="reconcile" class="panel hidden"><div class="card"><h2 class="font-bold text-lg mb-2">Rekonsiliasi saldo aktual</h2><p class="muted text-sm mb-4">Masukkan saldo yang terlihat di aplikasi/rekening. Sistem membandingkannya dengan saldo pembukuan tanpa mengubah saldo pembukuan.</p><div id="reconcileRows" class="space-y-3"></div><button onclick="saveReconciliation()" class="mt-4 bg-blue-700 text-white rounded-lg px-4 py-3 font-bold">Simpan hasil pemeriksaan</button><div class="mt-5"><div class="flex items-center justify-between gap-2 mb-2"><h3 class="font-semibold">Riwayat rekonsiliasi</h3><button onclick="clearHistory('reconciliations')" class="action-delete">Bersihkan semua</button></div><div id="reconcileHistory" class="space-y-2"></div></div></div></section>
+
 <section id="backup" class="panel hidden">
   <div class="grid lg:grid-cols-2 gap-4">
     <div class="card">
       <div class="flex items-center gap-2 mb-2"><span class="text-2xl">⬇️</span><h2 class="font-bold text-lg">Backup seluruh data</h2></div>
-      <p class="muted text-sm mb-4">Unduh satu file JSON yang berisi seluruh data ruang toko: transaksi, saldo, pecahan cash, piutang, pelunasan, mutasi, refund, rekonsiliasi, tarif, dan pengaturan pendukung.</p>
+      <p class="muted text-sm mb-4">Unduh satu file JSON yang berisi seluruh data ruang toko: transaksi, saldo, pecahan cash, piutang, pelunasan, mutasi, refund, riwayat pemeriksaan cash dan saldo digital, tarif, serta pengaturan pendukung.</p>
       <button type="button" onclick="downloadFullBackup()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4 py-3 font-bold">Unduh Backup JSON</button>
       <p id="backupInfo" class="muted text-xs mt-3">Backup dibuat dari data terakhir yang tersinkronisasi pada perangkat ini.</p>
     </div>
@@ -167,7 +216,7 @@ const firebaseConfig={apiKey:"AIzaSyCmhFRxUAAFHx00aoFryY-mjgGTRI_nFYpt",authDoma
 firebase.initializeApp(firebaseConfig);const db=firebase.database();let pin='',state=null,listener=null;
 const ACC=[['BRI','BRI (BRImo/BRILink)'],['JAGO','Bank Jago (termasuk Cadangan & GoPay)'],['DANA','DANA'],['SEABANK','SeaBank (termasuk ShopeePay/Mitra Shopee)'],['AMAR','Amar Bank'],['CASH','Cash fisik']];const WALLET_IDS=ACC.map(x=>x[0]);const DENOMS=[100000,50000,20000,10000,5000,2000,1000,500];
 const TYPES=['Tarik Tunai BRI (EDC)','Transfer BRI (EDC)','Tagihan BRI (EDC)','Tarik Tunai BRI (Non-EDC / App)','Transfer BRI (Non-EDC / App)','Tagihan BRI (Non-EDC / App)','Tarik Tunai Bank Lain (EDC)','Transfer Bank Lain (EDC)','Tarik Tunai Bank Lain (Non-EDC / App)','Transfer Bank Lain (Non-EDC / App)','PKH','Top Up DANA & e-Wallet','Tarik Tunai DANA & e-Wallet','PLN Token','PLN Tagihan (Non-EDC / App)','PLN Tagihan (EDC)','Pulsa','Paket Data','Pajak Kendaraan','Pajak Kendaraan + Print'];
-const DEFAULT={balances:{BRI:10000000,JAGO:8052926,DANA:207000,SEABANK:300000,AMAR:300000},cashDenoms:{100000:197,50000:13,20000:2,10000:14,5000:20,2000:203,1000:28,500:72},transactions:[],debts:[],transfers:[],events:[],refunds:[],reconciliations:[],rates:{},createdAt:Date.now()};
+const DEFAULT={balances:{BRI:10000000,JAGO:8052926,DANA:207000,SEABANK:300000,AMAR:300000},cashDenoms:{100000:197,50000:13,20000:2,10000:14,5000:20,2000:203,1000:28,500:72},transactions:[],debts:[],transfers:[],events:[],refunds:[],reconciliations:[],digitalChecks:[],cashChecks:[],cashCountDenoms:null,rates:{},createdAt:Date.now()};
 const money=n=>'Rp'+Math.round(Number(n)||0).toLocaleString('id-ID');const moneyDigits=n=>Math.round(Number(n)||0).toLocaleString('id-ID');const today=()=>new Date().toISOString().slice(0,10);const clone=x=>JSON.parse(JSON.stringify(x));const accName=id=>ACC.find(x=>x[0]===id)?.[1]||id;const cashTotal=()=>DENOMS.reduce((s,d)=>s+d*(Number(state.cashDenoms?.[d])||0),0)+(Number(state.cashAdjustment)||0);const balance=id=>id==='CASH'?cashTotal():Number(state.balances?.[id]||0);const totalDigital=()=>ACC.filter(a=>a[0]!=='CASH').reduce((s,a)=>s+Number(state.balances?.[a[0]]||0),0);const openDebt=()=>state.debts.reduce((s,d)=>s+Math.max(0,d.remaining),0);const totalAssets=()=>cashTotal()+totalDigital()+openDebt();
 function loginApp(){pin=document.getElementById('pin').value.trim();if(!pin)return alert('Masukkan PIN.');const ref=db.ref('stores/'+pin+'/v2');ref.once('value').then(s=>{if(!s.exists())return ref.set(DEFAULT).then(()=>startApp(ref));startApp(ref)}).catch(e=>alert('Gagal membuka data V2: '+e.message))}
 function startApp(ref){document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='transactions'));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('hidden',x.id!=='transactions'));if(listener)ref.off('value',listener);listener=s=>{state=s.val()||clone(DEFAULT);normalize();renderAll();migrateCashoutDebtAmounts()};ref.on('value',listener);setupForms()}
@@ -180,6 +229,9 @@ function normalize(){
   ensureIds(state);
   if(!state.balances)state.balances=clone(DEFAULT.balances);
   if(!state.cashDenoms)state.cashDenoms=clone(DEFAULT.cashDenoms);
+  if(!state.cashCountDenoms)state.cashCountDenoms=clone(state.cashDenoms);
+  if(!Array.isArray(state.cashChecks))state.cashChecks=[];
+  if(!Array.isArray(state.digitalChecks))state.digitalChecks=[];
   if(!state.openingSnapshots)state.openingSnapshots={};
 }
 let cashoutMigrationStarted=false;
@@ -219,6 +271,7 @@ function persist(mutator){
     ensureIds(s);
     if(!s.balances)s.balances=clone(DEFAULT.balances);
     if(!s.cashDenoms)s.cashDenoms=clone(DEFAULT.cashDenoms);
+    if(!Array.isArray(s.digitalChecks))s.digitalChecks=[];
     if(!s.openingSnapshots)s.openingSnapshots={};
     mutator(s);return s;
   }).then(r=>{if(!r.committed)throw Error('Firebase tidak mengonfirmasi penyimpanan.');return true;})
@@ -263,6 +316,8 @@ function render(){const opt=native.options[native.selectedIndex];trigger.innerHT
 trigger.addEventListener('click',()=>{const open=!wrap.classList.contains('open');document.querySelectorAll('.icon-select.open').forEach(x=>{x.classList.remove('open');x.querySelector('.icon-select-trigger')?.setAttribute('aria-expanded','false')});wrap.classList.toggle('open',open);trigger.setAttribute('aria-expanded',String(open))});native.addEventListener('change',render);document.addEventListener('click',e=>{if(!wrap.contains(e.target)){wrap.classList.remove('open');trigger.setAttribute('aria-expanded','false')}});render()}
 
 function setupForms(){
+  document.getElementById('debtSearch')?.addEventListener('input',renderDebts);
+  document.getElementById('debtStatusFilter')?.addEventListener('change',renderDebts);
   fillSelect('txAccount',true);fillSelect('txPaymentAccount',false);fillSelect('payDebtSource',true);fillSelect('transferFrom',true);fillSelect('transferTo',true);fillSelect('cashEventSource',true);
   document.getElementById('txType').innerHTML=TYPES.map(x=>`<option>${x}</option>`).join('');
   enhanceIconSelect('txAccount','account');enhanceIconSelect('txType','type');
@@ -439,10 +494,25 @@ function updateTxFilterSummary(rows){
   put('txSumProfit',money(profit));
   put('txSumLoss',money(loss));
 }
+function toggleTxFilterPanel(force){
+  const panel=document.getElementById('txAdvancedFilters');if(!panel)return;
+  const show=typeof force==='boolean'?force:panel.classList.contains('hidden');
+  panel.classList.toggle('hidden',!show);
+  const chev=document.getElementById('txFilterChevron');if(chev)chev.textContent=show?'▴':'▾';
+}
+function updateTxFilterUI(){
+  const ids=['txDateFrom','txDateTo','txModeFilter','txAccountFilter','txTypeFilter','txDebtFilter','txProfitFilter'];
+  const active=ids.filter(id=>{const el=document.getElementById(id);return el&&el.value&&(el.value!==''&&el.value!=='all');});
+  const badge=document.getElementById('txFilterBadge');if(badge){badge.textContent=String(active.length);badge.classList.toggle('hidden',active.length===0);}
+  const chips=document.getElementById('txActiveFilterChips');if(!chips)return;
+  const labels=active.map(id=>{const el=document.getElementById(id);const label=el.closest('div')?.querySelector('label')?.textContent||id;const value=el.tagName==='SELECT'?(el.selectedOptions[0]?.textContent||el.value):el.value;return `${label}: ${value}`;});
+  chips.innerHTML=labels.map(x=>`<span class="rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-200 px-2.5 py-1 text-xs">${x}</span>`).join('');
+}
 function renderTransactions(){
   if(!state)return;
   const rows=getFilteredTransactions();
   updateTxFilterSummary(rows);
+  updateTxFilterUI();
   txRows.innerHTML=rows.map(t=>
     `<tr class="border-b dark:border-slate-700"><td class="p-2"><b>${t.id}</b><div class="muted text-xs">${t.date}</div></td><td class="p-2">${t.type}<div class="muted text-xs">${accName(t.account)} · ${({cash:'Tunai',account:'Non-Tunai',debt:'Hutang',partial:'Bayar sebagian'}[t.payment]||t.payment)}</div>${t.note?`<div class="muted text-xs">${t.note}</div>`:''}</td><td class="p-2 text-right">${money(t.amount)}</td><td class="p-2 text-right ${Number(t.profit)<0?'amount-negative':'amount-positive'}">${money(t.profit)}</td><td class="p-2"><div class="flex justify-center gap-1"><button class="action-edit" onclick="editTransaction('${t.id}')">Edit</button><button class="action-delete" onclick="deleteTransaction('${t.id}')">Hapus</button></div></td></tr>`
   ).join('')||'<tr><td colspan="5" class="p-4 text-center muted">Tidak ada transaksi yang cocok dengan filter</td></tr>';
@@ -461,7 +531,7 @@ function applyTxDatePreset(){
   else if(preset==='yesterday'){const d=new Date(now);d.setDate(d.getDate()-1);a=fmt(d);b=fmt(d);}
   else if(preset==='7'||preset==='30'){const d=new Date(now);d.setDate(d.getDate()-Number(preset)+1);a=fmt(d);}
   else if(preset==='month')a=fmt(new Date(now.getFullYear(),now.getMonth(),1));
-  else if(preset==='custom'){renderTransactions();return;}
+  else if(preset==='custom'){toggleTxFilterPanel(true);renderTransactions();return;}
   if(preset==='all'){a='';b='';}
   from.value=a;to.value=b;renderTransactions();
 }
@@ -472,6 +542,7 @@ function onTxCustomDate(){
 function resetTxFilters(){
   ['txSearch','txDateFrom','txDateTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['txDatePreset','txModeFilter','txAccountFilter','txTypeFilter','txDebtFilter','txProfitFilter','txSort'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=id==='txDatePreset'?'all':id==='txSort'?'newest':'all';});
+  toggleTxFilterPanel(false);
   renderTransactions();
 }
 function txExportRows(rows){
@@ -661,19 +732,44 @@ function deleteTransaction(txId){
 }
 function renderWallets(){
   dashboardWallets.innerHTML=ACC.filter(a=>a[0]!=='CASH').map(a=>`<div class="flex justify-between border-b pb-2 dark:border-slate-700"><span>${a[1]}</span><b>${money(balance(a[0]))}</b></div>`).join('');
-  walletInputs.innerHTML=ACC.filter(a=>a[0]!=='CASH').map(a=>`<div><label class="text-xs font-semibold">${a[1]}</label><input class="field wallet-edit money-input" data-id="${a[0]}" type="text" inputmode="numeric" value="${moneyDigits(balance(a[0]))}"></div>`).join('');
-  cashInputs.innerHTML=DENOMS.map(d=>`<div><label class="text-xs font-semibold">Pecahan ${money(d)}</label><input class="field denom-edit money-input" data-denom="${d}" type="text" inputmode="numeric" value="${Number(state.cashDenoms[d]||0).toLocaleString('id-ID')}"></div>`).join('');
-  walletDigitalGrandTotal.textContent=money(totalDigital());walletCashGrandTotal.textContent=money(cashTotal());bindMoneyInputs();
+  walletInputs.innerHTML=ACC.filter(a=>a[0]!=='CASH').map(a=>{const saved=state.digitalCountBalances?.[a[0]];return `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div class="font-semibold text-sm mb-2">${a[1]}</div><div class="grid sm:grid-cols-2 gap-2"><div><label class="text-xs muted">Saldo tercatat aplikasi</label><div class="field bg-slate-100 dark:bg-slate-800">${money(balance(a[0]))}</div></div><div><label class="text-xs muted">Saldo real</label><input class="field digital-real-edit money-input" data-id="${a[0]}" type="text" inputmode="numeric" placeholder="Masukkan saldo real" value="${saved===undefined?'':moneyDigits(saved)}"></div></div><div class="text-xs muted mt-2" id="digital-diff-${a[0]}">${saved===undefined?'Belum diperiksa':'Selisih terakhir: '+money(Number(saved)-balance(a[0]))}</div></div>`}).join('');
+  cashInputs.innerHTML=DENOMS.map(d=>{const count=Number(state.cashCountDenoms?.[d]??state.cashDenoms[d]??0),amount=d*count;return `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div class="font-semibold text-sm mb-2">Pecahan ${money(d)}</div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs muted">Jumlah lembar/keping</label><input class="field denom-count" data-denom="${d}" type="text" inputmode="numeric" value="${count}"></div><div><label class="text-xs muted">Total nominal</label><input class="field denom-amount money-input" data-denom="${d}" type="text" inputmode="numeric" value="${moneyDigits(amount)}"></div></div></div>`}).join('');
+  bindCashDenomInputs();updateCashCheckPreview();renderCashCheckHistory();
+  walletDigitalGrandTotal.textContent=money(totalDigital());walletCashGrandTotal.textContent=money(cashTotal());bindMoneyInputs();document.querySelectorAll('.digital-real-edit').forEach(el=>el.addEventListener('input',updateDigitalCheckPreview));updateDigitalCheckPreview();
 }
 function debtPaymentId(debt,payment,index){return payment.id||`${debt.id}-PEL-${index+1}`}
 function renderDebts(){
   const all=state.debts||[],open=all.filter(d=>Number(d.remaining)>0);debtSummary.textContent=money(openDebt());
-  debtRows.innerHTML=all.slice().reverse().map(d=>{
-    const payments=(d.payments||[]).map((p,i)=>{const initial=!!p.initial||(!p.createdAt&&!String(p.id||'').startsWith('PEL-'));return `<div class="flex flex-wrap items-center justify-between gap-2 border-t py-2 text-sm"><div><b>${initial?'Pembayaran awal':debtPaymentId(d,p,i)}</b><div class="muted text-xs">${p.date||'-'} · ${p.source==='CASH'?'Cash':accName(p.source)} · ${money(p.amount)}</div></div>${initial?'<span class="muted text-xs">Dikelola melalui Edit Transaksi</span>':`<div class="flex gap-1"><button class="action-edit" onclick="editDebtPayment('${d.id}','${debtPaymentId(d,p,i)}')">Edit</button><button class="action-delete" onclick="cancelDebtPayment('${d.id}','${debtPaymentId(d,p,i)}')">Batalkan</button></div>`}</div>`;}).join('');
-    const status=Number(d.remaining)<=0?'Lunas':Number(d.paid)>0?'Sebagian':'Belum dibayar';
-    return `<div class="border rounded-xl p-3 mb-3"><div class="flex justify-between gap-2"><b>${d.id}</b><span class="text-xs font-semibold ${Number(d.remaining)<=0?'text-emerald-600':'text-amber-600'}">${status}</span></div><p class="text-sm">${d.name||'Tanpa nama'} · ${d.createdDate||'-'}</p><p class="font-bold mt-1">Sisa ${money(d.remaining)}</p><p class="text-xs muted">Awal ${money(d.original)} · Terbayar ${money(d.paid)}</p><div class="flex gap-1 mt-2"><button class="action-edit" onclick="editDebt('${d.id}')">Edit keterangan</button><button class="action-delete" onclick="deleteDebt('${d.id}')">Hapus piutang</button></div>${payments?`<div class="mt-2"><p class="text-xs font-semibold muted mb-1">Riwayat pelunasan</p>${payments}</div>`:'<p class="text-xs muted mt-2">Belum ada pelunasan.</p>'}</div>`;
-  }).join('')||'<p class="muted">Belum ada riwayat piutang.</p>';
-  payDebtId.innerHTML=open.map(d=>`<option value="${d.id}">${d.id} — sisa ${money(d.remaining)}</option>`).join('');
+  const search=(document.getElementById('debtSearch')?.value||'').trim().toLocaleLowerCase('id');
+  const statusFilter=document.getElementById('debtStatusFilter')?.value||'all';
+  const groups=new Map();
+  all.forEach(d=>{
+    const displayName=String(d.name||'Tanpa nama').trim()||'Tanpa nama';
+    const key=displayName.toLocaleLowerCase('id');
+    if(!groups.has(key))groups.set(key,{name:displayName,debts:[]});
+    groups.get(key).debts.push(d);
+  });
+  const filtered=[...groups.values()].filter(g=>{
+    const nameMatch=g.name.toLocaleLowerCase('id').includes(search);
+    const totalRemaining=g.debts.reduce((sum,d)=>sum+Math.max(0,Number(d.remaining)||0),0);
+    const statusMatch=statusFilter==='all'||(statusFilter==='open'&&totalRemaining>0)||(statusFilter==='paid'&&totalRemaining<=0);
+    return nameMatch&&statusMatch;
+  }).sort((a,b)=>a.name.localeCompare(b.name,'id'));
+  const count=filtered.reduce((sum,g)=>sum+g.debts.length,0);
+  const info=document.getElementById('debtResultInfo');if(info)info.textContent=`${filtered.length} nama · ${count} catatan piutang${search?' · hasil pencarian':''}`;
+  debtRows.innerHTML=filtered.map(g=>{
+    const totalOriginal=g.debts.reduce((sum,d)=>sum+(Number(d.original)||0),0);
+    const totalPaid=g.debts.reduce((sum,d)=>sum+(Number(d.paid)||0),0);
+    const totalRemaining=g.debts.reduce((sum,d)=>sum+Math.max(0,Number(d.remaining)||0),0);
+    const groupStatus=totalRemaining<=0?'Lunas':totalPaid>0?'Sebagian dibayar':'Belum lunas';
+    const debtCards=g.debts.slice().sort((a,b)=>String(b.createdDate||'').localeCompare(String(a.createdDate||''))).map(d=>{
+      const payments=(d.payments||[]).map((p,i)=>{const initial=!!p.initial||(!p.createdAt&&!String(p.id||'').startsWith('PEL-'));return `<div class="flex flex-wrap items-center justify-between gap-2 border-t py-2 text-sm"><div><b>${initial?'Pembayaran awal':debtPaymentId(d,p,i)}</b><div class="muted text-xs">${p.date||'-'} · ${p.source==='CASH'?'Cash':accName(p.source)} · ${money(p.amount)}</div></div>${initial?'<span class="muted text-xs">Dikelola melalui Edit Transaksi</span>':`<div class="flex gap-1"><button class="action-edit" onclick="editDebtPayment('${d.id}','${debtPaymentId(d,p,i)}')">Edit</button><button class="action-delete" onclick="cancelDebtPayment('${d.id}','${debtPaymentId(d,p,i)}')">Batalkan</button></div>`}</div>`;}).join('');
+      const status=Number(d.remaining)<=0?'Lunas':Number(d.paid)>0?'Sebagian':'Belum lunas';
+      return `<div class="rounded-lg border p-3 dark:border-slate-700"><div class="flex flex-wrap items-start justify-between gap-2"><div><p class="text-xs muted">${d.id} · ${d.createdDate||'-'}</p><p class="font-bold mt-1">Sisa ${money(d.remaining)}</p><p class="text-xs muted">Awal ${money(d.original)} · Terbayar ${money(d.paid)}</p></div><span class="text-xs font-semibold ${Number(d.remaining)<=0?'text-emerald-600':'text-amber-600'}">${status}</span></div><div class="flex flex-wrap gap-1 mt-2">${Number(d.remaining)>0?`<button class="bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg px-3 py-2 text-xs font-bold" onclick="fullPayDebt('${d.id}')">Lunasi penuh</button>`:''}<button class="action-edit" onclick="editDebt('${d.id}')">Edit keterangan</button><button class="action-delete" onclick="deleteDebt('${d.id}')">Hapus piutang</button></div>${payments?`<div class="mt-2"><p class="text-xs font-semibold muted mb-1">Riwayat pelunasan</p>${payments}</div>`:'<p class="text-xs muted mt-2">Belum ada pelunasan.</p>'}</div>`;
+    }).join('');
+    return `<div class="border rounded-xl p-3 mb-3 dark:border-slate-700"><div class="flex flex-wrap items-start justify-between gap-2"><div class="min-w-0"><h3 class="text-lg font-black break-words">${g.name}</h3><p class="text-xs muted mt-1">${g.debts.length} catatan piutang · Total awal ${money(totalOriginal)} · Terbayar ${money(totalPaid)}</p></div><span class="text-xs font-semibold ${totalRemaining<=0?'text-emerald-600':'text-amber-600'}">${groupStatus}</span></div><div class="mt-2 flex flex-wrap items-end justify-between gap-2"><div><p class="text-xs muted">Total sisa utang</p><p class="text-2xl font-black">${money(totalRemaining)}</p></div><span class="text-xs muted">${g.debts.filter(d=>Number(d.remaining)>0).length} belum lunas</span></div><details class="mt-3"><summary class="cursor-pointer rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm font-semibold">Lihat ${g.debts.length} rincian piutang</summary><div class="space-y-2 mt-3">${debtCards}</div></details></div>`;
+  }).join('')||'<p class="muted">Tidak ada piutang yang cocok dengan pencarian atau filter.</p>';
+  payDebtId.innerHTML=open.map(d=>`<option value="${d.id}">${d.name||'Tanpa nama'} · ${d.id} — sisa ${money(d.remaining)}</option>`).join('');
 }
 
 function editDebt(debtId){
@@ -740,10 +836,10 @@ function renderEvents(){
   const rows=[...transfers,...events].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   eventRows.innerHTML=rows.map(x=>{
     if(x._kind==='transfer')return `<div class="border-b py-3 dark:border-slate-700 text-sm"><div class="flex flex-wrap justify-between gap-2"><div><b>${x.id}</b> · Transfer internal<div class="muted text-xs">${x.date} · ${accName(x.from)} → ${accName(x.to)} · Nominal ${money(x.amount)} · Biaya ${money(x.fee||0)}</div></div><div class="flex gap-1"><button class="action-edit" onclick="editTransfer('${x.id}')">Edit</button><button class="action-delete" onclick="deleteTransfer('${x.id}')">Hapus</button></div></div></div>`;
-    const delta=eventDelta(x);return `<div class="border-b py-3 dark:border-slate-700 text-sm"><div class="flex flex-wrap justify-between gap-2"><div><b>${x.id}</b> · ${eventLabel(x.type)}<div class="muted text-xs">${x.date} · ${x.source==='CASH'?'Cash':accName(x.source)} · ${x.note||''}</div><div class="${delta<0?'amount-negative':'amount-positive'}">${delta<0?'−':'+'}${money(Math.abs(delta))}</div></div><div class="flex gap-1"><button class="action-edit" onclick="editEvent('${x.id}')">Edit</button><button class="action-delete" onclick="deleteEvent('${x.id}')">Hapus</button></div></div></div>`;
+    const delta=eventDelta(x);return `<div class="border-b py-3 dark:border-slate-700 text-sm"><div class="flex flex-wrap justify-between gap-2"><div><b>${x.id}</b> · ${eventLabel(x.type)}<div class="muted text-xs">${x.date} · ${x.source==='CASH'?'Cash':accName(x.source)} · ${x.category?' · '+x.category+' · ':''}${x.note||''}</div><div class="${delta<0?'amount-negative':'amount-positive'}">${delta<0?'−':'+'}${money(Math.abs(delta))}</div></div><div class="flex gap-1"><button class="action-edit" onclick="editEvent('${x.id}')">Edit</button><button class="action-delete" onclick="deleteEvent('${x.id}')">Hapus</button></div></div></div>`;
   }).join('')||'<p class="muted">Belum ada mutasi tambahan.</p>';
 }
-function eventLabel(type){return ({expense:'Pengeluaran operasional',capital:'Penambahan modal',owner:'Pengambilan pribadi / profit',adjust:'Penyesuaian saldo', 'Penyesuaian saldo':'Penyesuaian saldo','Koreksi pecahan cash':'Koreksi pecahan cash','Reset semua saldo':'Reset semua saldo'})[type]||type;}
+function eventLabel(type){return ({expense:'Pengeluaran operasional',capital:'Penambahan modal',owner:'Pengambilan pribadi / profit',adjust:'Penyesuaian saldo', 'Penyesuaian saldo':'Penyesuaian saldo','Penyesuaian saldo digital':'Koreksi saldo digital','Koreksi pecahan cash':'Koreksi pecahan cash','Penyesuaian Cash':'Penyesuaian Cash','Koreksi selisih cash':'Koreksi selisih cash','Reset semua saldo':'Reset semua saldo'})[type]||type;}
 function hasLaterCashActivity(s,e){
   const t=Number(e.createdAt)||0;
   if((s.events||[]).some(x=>x.id!==e.id&&Number(x.createdAt||0)>t&&x.source==='CASH'))return true;
@@ -811,6 +907,18 @@ function editEvent(eventId){
       if(ok){renderAll();alert('Koreksi pecahan cash diperbarui.');return true;}return false;
     });
   }
+  if(e.type==='Koreksi selisih cash'){
+    return openEditModal('Edit koreksi selisih cash',[
+      {key:'delta',label:'Perubahan saldo (Rp)',type:'signed',value:eventDelta(e),help:'Positif = saldo cash bertambah; negatif = saldo cash berkurang.'},
+      {key:'category',label:'Kategori sumber selisih',type:'select',value:e.category||'Lainnya',options:['Uang pribadi/keluarga','Transaksi belum tercatat','Kesalahan input transaksi','Kesalahan penghitungan sebelumnya','Lainnya'].map(x=>({value:x,label:x}))},
+      {key:'date',label:'Tanggal',type:'date',value:e.date},
+      {key:'note',label:'Keterangan',type:'text',value:e.note||'',full:true}
+    ],async v=>{
+      if(!v.delta)throw Error('Nominal koreksi tidak boleh nol.');
+      const ok=await persist(s=>{const x=s.events.find(y=>y.id===eventId);if(!x)throw Error('Koreksi tidak ditemukan.');applyEventDelta(s,x,-1);assertNonNegativeBalances(s,'Edit koreksi cash');x.delta=v.delta;x.amount=Math.abs(v.delta);x.category=v.category;x.date=v.date;x.note=v.note;applyEventDelta(s,x,1);x.updatedAt=Date.now();});
+      if(ok){renderAll();alert('Koreksi selisih cash diperbarui.');return true;}return false;
+    });
+  }
   if(e.type==='Penyesuaian saldo'){
     return openEditModal('Edit penyesuaian saldo',[
       {key:'delta',label:'Perubahan bersih (Rp)',type:'signed',value:eventDelta(e),help:'Gunakan tanda minus untuk pengurangan saldo.'}
@@ -832,7 +940,7 @@ function editEvent(eventId){
   });
 }
 
-function deleteEvent(eventId){const e=state.events.find(x=>x.id===eventId);if(!e)return;if(e.type==='Koreksi pecahan cash'&&hasLaterCashActivity(state,e))return alert('Koreksi pecahan ini tidak dapat dihapus karena sudah ada transaksi/mutasi cash setelahnya. Batalkan aktivitas cash yang lebih baru terlebih dahulu.');if(e.type!=='Reset semua saldo'&&lockedByBalanceReset(e))return alert('Mutasi berasal dari periode sebelum reset saldo dan tidak dapat dihapus.');if(e.type==='Reset semua saldo'&&Number(e.createdAt)!==Number(state.balanceResetAt))return alert('Hanya reset saldo paling baru yang dapat dibatalkan.');if(!confirm(`Hapus riwayat ${eventId} (${eventLabel(e.type)})? Dampak saldo mutasi ini akan dibalik.`))return;persist(s=>{const x=s.events.find(y=>y.id===eventId);if(!x)throw Error('Mutasi tidak ditemukan.');applyEventDelta(s,x,-1);assertNonNegativeBalances(s,'Hapus mutasi');s.events=s.events.filter(y=>y.id!==eventId);}).then(ok=>{if(ok){renderAll();alert('Mutasi dihapus dan dampak saldo dibalik.');}})}
+function deleteEvent(eventId){const e=state.events.find(x=>x.id===eventId);if(!e)return;if(e.type==='Koreksi selisih cash'&&hasLaterCashActivity(state,e))return alert('Koreksi ini tidak dapat dihapus karena sudah ada aktivitas cash setelahnya. Batalkan aktivitas cash yang lebih baru terlebih dahulu.');if(e.type==='Koreksi pecahan cash'&&hasLaterCashActivity(state,e))return alert('Koreksi pecahan ini tidak dapat dihapus karena sudah ada transaksi/mutasi cash setelahnya. Batalkan aktivitas cash yang lebih baru terlebih dahulu.');if(e.type!=='Reset semua saldo'&&lockedByBalanceReset(e))return alert('Mutasi berasal dari periode sebelum reset saldo dan tidak dapat dihapus.');if(e.type==='Reset semua saldo'&&Number(e.createdAt)!==Number(state.balanceResetAt))return alert('Hanya reset saldo paling baru yang dapat dibatalkan.');if(!confirm(`Hapus riwayat ${eventId} (${eventLabel(e.type)})? Dampak saldo mutasi ini akan dibalik.`))return;persist(s=>{const x=s.events.find(y=>y.id===eventId);if(!x)throw Error('Mutasi tidak ditemukan.');applyEventDelta(s,x,-1);assertNonNegativeBalances(s,'Hapus mutasi');s.events=s.events.filter(y=>y.id!==eventId);}).then(ok=>{if(ok){renderAll();alert('Mutasi dihapus dan dampak saldo dibalik.');}})}
 function renderRefunds(){
   refundRows.innerHTML=[...state.refunds].reverse().map(r=>`<div class="border rounded-xl p-3 dark:border-slate-700"><div class="flex justify-between gap-2 flex-wrap"><div><b>${r.id}</b><p class="text-sm">Periode ${r.periodStart} s.d. ${r.periodEnd}</p><p class="text-sm">Masuk ${r.dateReceived}</p><p class="amount-positive">${money(r.amount)}</p><p class="muted text-xs">${r.note||''}</p></div><div class="flex gap-1"><button class="action-edit" onclick="editRefund('${r.id}')">Edit</button><button class="action-delete" onclick="deleteRefund('${r.id}')">Hapus</button></div></div></div>`).join('')||'<p class="muted text-sm">Belum ada refund dicatat.</p>';
   const refund=state.refunds.reduce((s,r)=>s+(Number(r.amount)||0),0),cost=state.transactions.filter(t=>String(t.type||'').includes('(EDC)')).reduce((s,t)=>s+(Number(t.systemCost)||0),0),profit=state.transactions.reduce((s,t)=>s+(Number(t.profit)||0),0),fees=state.transfers.reduce((s,t)=>s+(Number(t.fee)||0),0);
@@ -875,18 +983,98 @@ function editReconciliation(reconcileId){
 }
 
 function deleteReconciliation(reconcileId){const r=state.reconciliations.find(x=>x.id===reconcileId);if(!r)return;if(!confirm(`Hapus riwayat rekonsiliasi ${reconcileId}? Saldo pembukuan tidak berubah.`))return;persist(s=>{s.reconciliations=s.reconciliations.filter(x=>x.id!==reconcileId);}).then(ok=>{if(ok){renderAll();alert('Riwayat rekonsiliasi dihapus.');}})}
-function renderAll(){initTxFilterOptions();if(!state)return;assetTotal.textContent=money(totalAssets());document.getElementById('cashTotal').textContent=money(cashTotal());digitalTotal.textContent=money(totalDigital());debtTotal.textContent=money(openDebt());renderWallets();renderTransactions();renderDebts();renderEvents();renderRefunds();renderReconcile()}
-function saveOpeningWallets(){const vals={};document.querySelectorAll('.wallet-edit').forEach(e=>vals[e.dataset.id]=Number(digits(e.value))||0);if(!confirm('Simpan saldo sebagai penyesuaian tercatat?'))return;persist(s=>{for(const [k,v] of Object.entries(vals)){const old=Number(s.balances[k])||0,delta=v-old;s.balances[k]=v;s.events.push({id:id('ADJ',s.events),type:'Penyesuaian saldo',date:today(),source:k,amount:Math.abs(delta),delta,note:`Saldo berubah dari ${old} menjadi ${v}`,createdAt:Date.now()});}}).then(ok=>ok&&renderAll())}
-function saveCashDenoms(){
-  const vals={};document.querySelectorAll('.denom-edit').forEach(e=>vals[e.dataset.denom]=Number(digits(e.value))||0);
-  persist(s=>{
-    const beforeCashDenoms=clone(s.cashDenoms||{}),beforeCashAdjustment=Number(s.cashAdjustment)||0;
-    const old=DENOMS.reduce((sum,d)=>sum+d*(beforeCashDenoms[d]||0),0)+beforeCashAdjustment;
-    const now=DENOMS.reduce((sum,d)=>sum+d*(vals[d]||0),0),delta=now-old;
-    s.cashDenoms=clone(vals);s.cashAdjustment=0;
-    s.events.push({id:id('CASH',s.events),type:'Koreksi pecahan cash',date:today(),source:'CASH',amount:Math.abs(delta),delta,note:`Cash berubah dari ${old} menjadi ${now}`,beforeCashDenoms,beforeCashAdjustment,afterCashDenoms:clone(vals),createdAt:Date.now()});
-  }).then(ok=>{if(ok)renderAll()});
+function renderAll(){initTxFilterOptions();if(!state)return;assetTotal.textContent=money(totalAssets());document.getElementById('cashTotal').textContent=money(cashTotal());digitalTotal.textContent=money(totalDigital());debtTotal.textContent=money(openDebt());renderWallets();renderTransactions();renderDebts();renderEvents();renderRefunds();renderDigitalCheckHistory()}
+function readDigitalRealInputs(){
+  const items=[];document.querySelectorAll('.digital-real-edit').forEach(el=>{if(el.value.trim()==='')return;const actual=Number(digits(el.value))||0;if(actual<0)throw Error('Saldo real tidak boleh negatif.');items.push({source:el.dataset.id,name:accName(el.dataset.id),actual,book:balance(el.dataset.id),difference:actual-balance(el.dataset.id)});});
+  if(!items.length)throw Error('Masukkan setidaknya satu saldo real.');return items;
 }
+function updateDigitalCheckPreview(){
+  document.querySelectorAll('.digital-real-edit').forEach(el=>{const out=document.getElementById('digital-diff-'+el.dataset.id);if(!out)return;if(el.value.trim()===''){out.textContent='Belum diperiksa';return;}const diff=(Number(digits(el.value))||0)-balance(el.dataset.id);out.textContent='Selisih: '+(diff>0?'Lebih ':diff<0?'Kurang ':'')+money(Math.abs(diff));out.className='text-xs mt-2 '+(diff>0?'amount-positive':diff<0?'amount-negative':'muted');});
+}
+async function saveDigitalCount(){
+  let items;try{items=readDigitalRealInputs()}catch(e){return alert(e.message)}
+  const ok=await persist(s=>{s.digitalCountBalances=s.digitalCountBalances||{};items.forEach(i=>s.digitalCountBalances[i.source]=i.actual);s.digitalChecks=s.digitalChecks||[];s.digitalChecks.push({id:id('DCHK',s.digitalChecks),date:today(),createdAt:Date.now(),items:clone(items),status:'checked'});});
+  if(ok){renderAll();alert('Hasil pemeriksaan saldo digital berhasil disimpan. Saldo aplikasi tidak berubah.');}
+}
+function openDigitalCorrectionForm(){
+  let items;try{items=readDigitalRealInputs()}catch(e){return alert(e.message)}
+  const changed=items.filter(i=>i.difference!==0);if(!changed.length)return alert('Tidak ada selisih pada saldo yang diisi.');
+  document.getElementById('digitalCorrectionSummary').innerHTML=changed.map(i=>`<div class="rounded-lg bg-white/70 dark:bg-slate-900/60 p-3 flex flex-wrap justify-between gap-2"><div><b>${i.name}</b><div class="text-xs muted">Tercatat ${money(i.book)} · Real ${money(i.actual)}</div></div><b class="${i.difference>0?'amount-positive':'amount-negative'}">${i.difference>0?'Lebih ':'Kurang '}${money(Math.abs(i.difference))}</b></div>`).join('');
+  document.getElementById('digitalCorrectionNote').value='';document.getElementById('digitalCorrectionPanel').classList.remove('hidden');
+}
+function closeDigitalCorrectionForm(){document.getElementById('digitalCorrectionPanel').classList.add('hidden')}
+async function confirmDigitalCorrection(){
+  let items;try{items=readDigitalRealInputs()}catch(e){return alert(e.message)}
+  const changed=items.filter(i=>i.difference!==0);if(!changed.length)return alert('Tidak ada selisih untuk dikoreksi.');
+  const note=document.getElementById('digitalCorrectionNote').value.trim();
+  const ok=await persist(s=>{for(const item of changed){const old=Number(s.balances[item.source])||0,delta=item.actual-old;s.balances[item.source]=item.actual;s.events.push({id:id('ADJ',s.events),type:'Penyesuaian saldo digital',date:today(),source:item.source,amount:Math.abs(delta),delta,note:note||`Koreksi saldo digital: ${item.name} dari ${old} menjadi ${item.actual}`,category:'Rekonsiliasi saldo digital',createdAt:Date.now()});}s.digitalCountBalances=s.digitalCountBalances||{};items.forEach(i=>s.digitalCountBalances[i.source]=i.actual);});
+  if(ok){closeDigitalCorrectionForm();renderAll();alert('Saldo digital berhasil dikoreksi mengikuti saldo real. Laba transaksi tidak berubah.');}
+}
+function renderDigitalCheckHistory(){
+  const el=document.getElementById('digitalCheckHistory');if(!el)return;
+  el.innerHTML='<div class="font-semibold text-sm mb-2">Riwayat pemeriksaan saldo digital</div>'+[...(state.digitalChecks||[])].slice().reverse().map(r=>`<div class="border-b py-2 dark:border-slate-700 text-sm"><b>${r.id}</b> · ${r.date}<div class="muted text-xs mt-1">${(r.items||[]).map(i=>`${i.name}: Real ${money(i.actual)} · Aplikasi ${money(i.book)} · Selisih ${i.difference>0?'Lebih ':i.difference<0?'Kurang ':''}${money(Math.abs(i.difference))}`).join(' | ')}</div></div>`).join('')||'<p class="muted text-xs">Belum ada pemeriksaan saldo digital.</p>';
+}
+
+function bindCashDenomInputs(){
+  document.querySelectorAll('.denom-count').forEach(input=>input.addEventListener('input',()=>{
+    const d=Number(input.dataset.denom),count=Math.max(0,Number(digits(input.value))||0),amountInput=document.querySelector(`.denom-amount[data-denom="${d}"]`);
+    if(input.value!==''&&Number(digits(input.value))<0)input.value='0';
+    amountInput.value=moneyDigits(count*d);updateCashCheckPreview();
+  }));
+  document.querySelectorAll('.denom-amount').forEach(input=>input.addEventListener('input',()=>{
+    const d=Number(input.dataset.denom),raw=digits(input.value),amount=Number(raw)||0,countInput=document.querySelector(`.denom-count[data-denom="${d}"]`);
+    input.setCustomValidity(amount%d===0?'':'Nominal harus kelipatan '+money(d)+'.');
+    countInput.value=amount%d===0?String(amount/d):'';updateCashCheckPreview();
+  }));
+}
+function readCashCountInputs(){
+  const vals={};for(const d of DENOMS){const countInput=document.querySelector(`.denom-count[data-denom="${d}"]`),amountInput=document.querySelector(`.denom-amount[data-denom="${d}"]`);const amount=Number(digits(amountInput?.value))||0;if(amount%d!==0)throw Error('Nominal pecahan '+money(d)+' harus kelipatan '+money(d)+'.');vals[d]=amount/d;if(!Number.isInteger(vals[d])||vals[d]<0)throw Error('Jumlah pecahan tidak valid.');}return vals;
+}
+function cashCountTotal(vals){return DENOMS.reduce((sum,d)=>sum+d*(Number(vals[d])||0),0)}
+function updateCashCheckPreview(){
+  const book=cashTotal();let real=0;try{real=cashCountTotal(readCashCountInputs())}catch(_){real=0;}
+  const diff=real-book;const a=document.getElementById('cashBookCheck'),b=document.getElementById('cashRealCheck'),c=document.getElementById('cashDiffCheck');if(!a)return;
+  a.textContent=money(book);b.textContent=money(real);c.textContent=(diff>0?'Lebih ':diff<0?'Kurang ':'')+money(Math.abs(diff));c.className='text-lg '+(diff>0?'amount-positive':diff<0?'amount-negative':'');
+}
+async function saveCashCount(){
+  let vals;try{vals=readCashCountInputs()}catch(e){return alert(e.message)}
+  const real=cashCountTotal(vals),book=cashTotal(),diff=real-book;
+  const ok=await persist(s=>{s.cashCountDenoms=clone(vals);s.cashChecks=s.cashChecks||[];s.cashChecks.push({id:id('CHK',s.cashChecks),date:today(),createdAt:Date.now(),book,real,difference:diff,denoms:clone(vals),status:'checked'});});
+  if(ok){renderAll();alert('Hasil hitung fisik berhasil disimpan. Saldo cash aplikasi tidak berubah.');}
+}
+function openCashCorrectionForm(){
+  let vals;try{vals=readCashCountInputs()}catch(e){return alert(e.message)}
+  const real=cashCountTotal(vals),book=cashTotal(),diff=real-book;
+  if(diff===0)return alert('Tidak ada selisih. Cash real sudah sama dengan catatan aplikasi.');
+  document.getElementById('cashCorrectionAmount').textContent=(diff>0?'Lebih ':'Kurang ')+money(Math.abs(diff));
+  document.getElementById('cashCorrectionAmount').className='text-xl '+(diff>0?'amount-positive':'amount-negative');
+  document.getElementById('cashCorrectionTarget').textContent=money(real);
+  document.getElementById('cashCorrectionNote').value='';
+  document.getElementById('cashCorrectionPanel').classList.remove('hidden');
+  document.getElementById('cashCorrectionPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeCashCorrectionForm(){document.getElementById('cashCorrectionPanel')?.classList.add('hidden');}
+async function confirmCashCorrection(){
+  let vals;try{vals=readCashCountInputs()}catch(e){return alert(e.message)}
+  const real=cashCountTotal(vals),book=cashTotal(),diff=real-book;
+  if(diff===0){closeCashCorrectionForm();return alert('Tidak ada selisih untuk dikoreksi.');}
+  const note=document.getElementById('cashCorrectionNote').value.trim();
+  const direction=diff>0?'lebih':'kurang';
+  const ok=await persist(s=>{
+    const current=DENOMS.reduce((sum,d)=>sum+d*(Number(s.cashDenoms?.[d])||0),0)+(Number(s.cashAdjustment)||0);
+    const actual=cashCountTotal(vals),delta=actual-current;
+    if(!delta)throw Error('Tidak ada selisih saat penyimpanan.');
+    if(current+delta<0)throw Error('Saldo cash tidak dapat menjadi negatif.');
+    s.cashAdjustment=(Number(s.cashAdjustment)||0)+delta;
+    s.cashCountDenoms=clone(vals);
+    s.events.push({id:id('CASHCOR',s.events),type:'Koreksi selisih cash',source:'CASH',amount:Math.abs(delta),delta,date:today(),note:note||('Koreksi cash '+direction),createdAt:Date.now()});
+    s.cashChecks=s.cashChecks||[];
+    s.cashChecks.push({id:id('CHK',s.cashChecks),date:today(),createdAt:Date.now(),book:current,real:actual,difference:delta,denoms:clone(vals),status:'corrected',note});
+  });
+  if(ok){closeCashCorrectionForm();renderAll();alert('Saldo cash aplikasi berhasil disesuaikan dengan uang real. Riwayat koreksi tersimpan dan laba transaksi tidak berubah.');}
+}
+function renderCashCheckHistory(){const el=document.getElementById('cashCheckHistory');if(!el)return;const rows=(state.cashChecks||[]).slice().reverse().slice(0,8);el.innerHTML=rows.length?`<h3 class="font-semibold text-sm mb-2">Riwayat pemeriksaan cash</h3>`+rows.map(x=>`<div class="border-t dark:border-slate-700 py-2 text-xs flex flex-wrap justify-between gap-2"><span><b>${x.date||'-'}</b> · ${x.status==='corrected'?'Sudah dikoreksi':'Hasil hitung disimpan'}${x.category?' · '+x.category:''}${x.note?' · '+x.note:''}</span><span>Aplikasi ${money(x.book)} · Real ${money(x.real)} · Selisih <b class="${x.difference>0?'amount-positive':x.difference<0?'amount-negative':''}">${x.difference>0?'Lebih ':x.difference<0?'Kurang ':''}${money(Math.abs(x.difference||0))}</b></span></div>`).join(''):'<p class="muted text-xs mt-3">Belum ada riwayat pemeriksaan cash.</p>';}
+
 function clearHistory(kind){
   const map={transactions:['transaksi','transactions'],debts:['piutang dan riwayat pelunasannya','debts'],mutations:['mutasi internal dan catatan operasional','mutations'],refunds:['refund EDC','refunds'],reconciliations:['rekonsiliasi','reconciliations']};const entry=map[kind];if(!entry)return;
   const warning=kind==='debts'?' Piutang yang belum lunas juga akan dihapus dari daftar tagihan dan tidak lagi dihitung sebagai aset.':'';if(!confirm(`Bersihkan semua riwayat ${entry[0]}? Saldo cash/digital tidak berubah dan disimpan sebagai saldo awal baru.${warning}\n\nPilih OK untuk melanjutkan atau Cancel untuk membatalkan.`))return;
@@ -894,11 +1082,18 @@ function clearHistory(kind){
 }
 function resetAllBalances(){
   if(!confirm('Reset semua saldo digital dan cash menjadi Rp0? Semua riwayat tetap dipertahankan, tetapi riwayat sebelum reset tidak bisa diedit/dihapus karena saldo sudah menjadi saldo awal baru.\n\nPilih OK untuk melanjutkan atau Cancel untuk membatalkan.'))return;
-  persist(s=>{const before={balances:clone(s.balances||{}),cashDenoms:clone(s.cashDenoms||{}),cashAdjustment:Number(s.cashAdjustment)||0};Object.keys(s.balances||{}).forEach(k=>s.balances[k]=0);DENOMS.forEach(d=>s.cashDenoms[d]=0);s.cashAdjustment=0;const previousBalanceResetAt=s.balanceResetAt||null;const resetTime=Date.now();s.balanceResetAt=resetTime;s.openingSnapshots=s.openingSnapshots||{};s.openingSnapshots.balanceReset={date:today(),createdAt:resetTime,balances:clone(s.balances),cashDenoms:clone(s.cashDenoms),cashAdjustment:0};s.events.push({id:id('RST',s.events),type:'Reset semua saldo',date:today(),amount:0,note:'Saldo digital dan cash direset ke Rp0; riwayat dipertahankan.',before,previousBalanceResetAt,createdAt:resetTime});}).then(ok=>{if(ok){renderAll();alert('Semua saldo berhasil direset ke Rp0.');}});
+  persist(s=>{const before={balances:clone(s.balances||{}),cashDenoms:clone(s.cashDenoms||{}),cashAdjustment:Number(s.cashAdjustment)||0};Object.keys(s.balances||{}).forEach(k=>s.balances[k]=0);DENOMS.forEach(d=>{s.cashDenoms[d]=0;if(s.cashCountDenoms)s.cashCountDenoms[d]=0;});s.cashAdjustment=0;const previousBalanceResetAt=s.balanceResetAt||null;const resetTime=Date.now();s.balanceResetAt=resetTime;s.openingSnapshots=s.openingSnapshots||{};s.openingSnapshots.balanceReset={date:today(),createdAt:resetTime,balances:clone(s.balances),cashDenoms:clone(s.cashDenoms),cashAdjustment:0};s.events.push({id:id('RST',s.events),type:'Reset semua saldo',date:today(),amount:0,note:'Saldo digital dan cash direset ke Rp0; riwayat dipertahankan.',before,previousBalanceResetAt,createdAt:resetTime});}).then(ok=>{if(ok){renderAll();alert('Semua saldo berhasil direset ke Rp0.');}});
 }
 function resetEntireApp(){
   if(!confirm('PERINGATAN: Seluruh saldo, transaksi, piutang, pelunasan, mutasi, refund, dan rekonsiliasi akan dihapus permanen dari ruang data V2. Tindakan ini tidak dapat dibatalkan.\n\nYakin ingin mereset seluruh aplikasi? Pilih OK untuk Ya atau Cancel untuk Tidak.'))return;
-  persist(s=>{for(const k of Object.keys(s.balances||{}))s.balances[k]=0;for(const d of DENOMS)s.cashDenoms[d]=0;s.cashAdjustment=0;s.transactions=[];s.debts=[];s.transfers=[];s.events=[];s.refunds=[];s.reconciliations=[];s.openingSnapshots={};s.balanceResetAt=Date.now();s.rates={};s.resetAt=Date.now();}).then(ok=>{if(ok){renderAll();alert('Aplikasi berhasil direset. Seluruh saldo Rp0 dan seluruh riwayat operasional telah dihapus.');}});
+  persist(s=>{for(const k of Object.keys(s.balances||{}))s.balances[k]=0;for(const d of DENOMS){s.cashDenoms[d]=0;if(s.cashCountDenoms)s.cashCountDenoms[d]=0;}s.cashAdjustment=0;s.cashChecks=[];s.transactions=[];s.debts=[];s.transfers=[];s.events=[];s.refunds=[];s.reconciliations=[];s.openingSnapshots={};s.balanceResetAt=Date.now();s.rates={};s.resetAt=Date.now();}).then(ok=>{if(ok){renderAll();alert('Aplikasi berhasil direset. Seluruh saldo Rp0 dan seluruh riwayat operasional telah dihapus.');}});
+}
+
+function fullPayDebt(debtId){
+  const debt=state.debts.find(x=>x.id===debtId);if(!debt)return alert('Data piutang tidak ditemukan.');
+  const amount=Math.max(0,Number(debt.remaining)||0);if(amount<=0)return alert('Piutang ini sudah lunas.');
+  const source=payDebtSource.value,date=payDebtDate.value||today();if(!source)return alert('Pilih sumber penerimaan pada bagian Catat Pelunasan terlebih dahulu.');
+  persist(s=>{const d=s.debts.find(x=>x.id===debtId);const remaining=Math.max(0,Number(d?.remaining)||0);if(!d||remaining<=0)throw Error('Piutang sudah lunas atau tidak ditemukan.');d.paid=(Number(d.paid)||0)+remaining;d.remaining=Math.max(0,(Number(d.original)||0)-d.paid);d.status='paid';d.payments=d.payments||[];d.payments.push({id:id('PEL',d.payments),date,source,amount:remaining,createdAt:Date.now(),quickFullPayment:true});if(source==='CASH')s.cashAdjustment=(Number(s.cashAdjustment)||0)+remaining;else s.balances[source]=(Number(s.balances[source])||0)+remaining;}).then(ok=>{if(ok){renderAll();alert(`Piutang ${debt.name||debtId} berhasil dilunasi sebesar ${money(amount)} melalui ${source==='CASH'?'Cash':accName(source)}.`);}});
 }
 
 function payDebt(e){
