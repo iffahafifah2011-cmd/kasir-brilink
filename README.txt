@@ -1,12 +1,19 @@
-BRILink Smart Kasir V2 - Update Tombol Lunasi Penuh
+BRILink Smart Kasir V2 - Update Koreksi Saldo Digital & Cash
 
-ISI UPDATE:
-- Menambahkan tombol "Lunasi penuh" pada setiap rincian piutang yang masih memiliki sisa.
-- Tombol mencatat pelunasan sebesar seluruh sisa piutang secara langsung.
-- Sumber penerimaan dan tanggal mengikuti pilihan pada formulir "Catat pelunasan berdasarkan ID piutang".
-- Input nominal pembayaran pada formulir tetap tersedia untuk pembayaran sebagian.
-- Pembayaran masuk ke saldo Cash/digital sesuai sumber yang dipilih dan tercatat pada riwayat pelunasan.
-- Cache service worker diperbarui agar browser mengambil versi aplikasi terbaru.
+PERUBAHAN:
+1. Saldo Digital:
+   - Setelah koreksi, saldo tercatat aplikasi disamakan dengan saldo real yang diinput.
+   - Kolom saldo real yang dikoreksi otomatis dikosongkan untuk pemeriksaan berikutnya.
+   - Riwayat pemeriksaan/koreksi tetap tersimpan.
+   - Hasil pemeriksaan lama tidak lagi ditampilkan sebagai saldo real aktif jika saldo aplikasi sudah berubah setelah pemeriksaan.
+   - Akun digital yang tidak diisi tetap dianggap sama dengan saldo aplikasi hanya untuk ringkasan; tidak ikut dikoreksi.
+2. Cash:
+   - Koreksi menyamakan saldo cash aplikasi dengan total pecahan real.
+   - Rincian pecahan tetap disimpan setelah koreksi.
+   - Jika saldo cash berubah karena transaksi/mutasi setelah pemeriksaan terakhir, ringkasan menampilkan "Perlu hitung ulang" alih-alih menampilkan selisih lama sebagai kurang/lebih baru.
+   - Riwayat pemeriksaan dan koreksi tetap tersimpan.
+3. Koreksi tidak mengubah laba transaksi.
+4. Versi cache Service Worker dinaikkan ke v10.
 
 PEMASANGAN:
 1. Ekstrak ZIP.
@@ -16,8 +23,6 @@ PEMASANGAN:
 5. Refresh aplikasi dengan Ctrl + Shift + R.
 
 CATATAN:
-- Firebase dan struktur data lama tetap digunakan.
-- Tombol Lunasi penuh menggunakan sumber dan tanggal yang dipilih pada formulir pelunasan.
-- Untuk pembayaran sebagian, tetap gunakan kolom Nominal pembayaran dan tombol Simpan pelunasan.
-
-Update layout Saldo & Cash: pada layar lebar, kartu Cash berdasarkan pecahan kini sejajar dengan kartu Saldo Digital dan memiliki lebar yang sama. Pada layar kecil, kedua kartu tersusun vertikal agar tetap nyaman digunakan.
+- Tetap menggunakan Firebase dan struktur data yang sama.
+- Jangan reset Firebase atau mengganti PIN.
+- Setelah update, uji dulu dengan nominal kecil dan pastikan kolom saldo real digital kosong setelah koreksi.

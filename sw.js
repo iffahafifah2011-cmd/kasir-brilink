@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brilink-smart-kasir-modern-v8';
+const CACHE_NAME = 'brilink-smart-kasir-modern-v11';
 const CORE = ['./', './index.html', './manifest.json', './assets/bri.png', './assets/jago.png', './assets/dana.png', './assets/seabank.png', './assets/amar.png', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE))); self.skipWaiting(); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))); self.clients.claim(); });
